@@ -1,5 +1,5 @@
 {
-    "title": "IML Appmonitor",
+    "title": "Axels Multidoc Generator",
     "author": "Axel Hahn",
     "ignore": {
         "files": ["30_PHP-client/Plugins/Checks/_skeleton.md"],
@@ -12,9 +12,7 @@
         "jump_buttons": true,
         "edit_on_github_": "iml-it/appmonitor/tree/master/docs",
         "links": {
-            "GitHub Repo": "https://github.com/iml-it/appmonitor",
-            "Help/Support/Bugs": "https://github.com/dauxio/daux.io/issues",
-            "Daux.io": "https://github.com/dauxio/daux.io"
+            "GitHub Repo": "https://github.com/axelhahn/multidoc-generator"
         },
         "theme": "daux-blue",
         "search": true
