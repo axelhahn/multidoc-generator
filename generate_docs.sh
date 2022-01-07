@@ -50,7 +50,7 @@ function _gitUpdate(){
         cd - >/dev/null
     else
         echo "Cloning..."
-        git clone "$_dirgit"
+        git clone $_url "$_dirgit"
     fi
 
 }
@@ -103,17 +103,19 @@ function processRepos(){
 
         daux generate -s "$SELFDIR/tmp/$_prj/docs" -d "$_dirdoc"
         if [ $? -eq 0 ]; then
-            echo "TODO: generate index page with all projects"
             add2Index "$_prj" "$_label"
         else
             echo "ERROR occured in Daux generator ... removing target dir $_dirdoc"
             rm -rf "$_dirdoc"
-            add2Index "$_prj" "$_label"
         fi
         
         echo
     done
+
+    echo ---------- generate overview
+    echo
     generateIndex
+    echo
 }
 
 # ----------------------------------------------------------------------
