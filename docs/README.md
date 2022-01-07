@@ -5,7 +5,7 @@ License: GNU GPL 3.0
 # Requirements #
 
 * PHP 7.4 or 8
-* daux - generator to create static html pages from markdown
+* Daux - generator to create static html pages from markdown. See <https://daux.io/>
 
 # Installation #
 
