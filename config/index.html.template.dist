@@ -1,0 +1,13 @@
+<!doctype html>
+<html>
+    <head>
+    </head>
+    <body>
+        <h1>My Docs</h1>
+
+        <ul>
+        __CONTENT__
+        </li>
+        
+    </body>
+</html>

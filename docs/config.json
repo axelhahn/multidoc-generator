@@ -1,0 +1,22 @@
+{
+    "title": "IML Appmonitor",
+    "author": "Axel Hahn",
+    "ignore": {
+        "files": ["30_PHP-client/Plugins/Checks/_skeleton.md"],
+        "folders": ["99_Not_Ready"]
+    },
+    "html": {
+        "auto_landing": false,
+        "auto_toc": true,
+        "date_modified": false,
+        "jump_buttons": true,
+        "edit_on_github_": "iml-it/appmonitor/tree/master/docs",
+        "links": {
+            "GitHub Repo": "https://github.com/iml-it/appmonitor",
+            "Help/Support/Bugs": "https://github.com/dauxio/daux.io/issues",
+            "Daux.io": "https://github.com/dauxio/daux.io"
+        },
+        "theme": "daux-blue",
+        "search": true
+    }
+}

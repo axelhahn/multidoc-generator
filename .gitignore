@@ -1,0 +1,4 @@
+config/repos.cfg
+config/index.html.template
+public_html/*
+tmp/*
