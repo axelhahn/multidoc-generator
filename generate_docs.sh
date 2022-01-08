@@ -5,16 +5,17 @@
 #
 # ----------------------------------------------------------------------
 # 2022-01-07   ah   v0.1  first lines
+# 2022-01-08   ah   v0.2  fixes found by shellcheck
 # ======================================================================
 
-SELFDIR=$( dirname $0 )
-CFG=$SELFDIR/config/repos.cfg
+SELFDIR=$( dirname "$0" )
+CFG="$SELFDIR/config/repos.cfg"
 IDXTEMPLATE=$SELFDIR/config/index.html.template
 IDX=$SELFDIR/public_html/index.html
 
 IDXDATA=/tmp/index_$$
 
-ABOUT="MULTI DOC GENERATOR using DAUX v 0.1 - $( date )"
+# ABOUT="MULTI DOC GENERATOR using DAUX v 0.2 - $( date )"
 
 # ----------------------------------------------------------------------
 # FUNCTIONS
@@ -23,9 +24,9 @@ ABOUT="MULTI DOC GENERATOR using DAUX v 0.1 - $( date )"
 
 # check requirements to run this tool
 function checkRequirements(){
-    which daux >/dev/null
-    if [ $? -ne 0 ]; then
-        echo "ERROR: Install daux first and add it to $PATH"
+    if ! which daux >/dev/null; 
+    then
+        echo "ERROR: Install daux first and add it to \$PATH"
         exit 1
     fi
 }
@@ -35,7 +36,7 @@ function checkRequirements(){
 
 # get uncommented lines from config file
 function _getRepos(){
-    grep "^[a-zA-Z]" $CFG 
+    grep "^[a-zA-Z]" "$CFG"
 }
 
 
@@ -45,12 +46,12 @@ function _gitUpdate(){
     local _dirgit=$2
     if [ -d "$_dirgit" ]; then
         echo "Update local data from repo..."
-        cd "$_dirgit"
+        cd "$_dirgit" || exit 1
         git pull
-        cd - >/dev/null
+        cd - >/dev/null || exit 1
     else
         echo "Cloning..."
-        git clone $_url "$_dirgit"
+        git clone "$_url" "$_dirgit"
     fi
 
 }
@@ -59,17 +60,17 @@ function _gitUpdate(){
 function add2Index(){
     local _prj=$1
     local _label=$2
-    echo "<li><a href=\"$_prj\">$_label</a></li>" >>$IDXDATA
+    echo "<li><a href=\"$_prj\">$_label</a></li>" >>"$IDXDATA"
 }
 
 # generate index.html with overview of all doc pages
 # It reads the ./config/index.html.template
 function generateIndex(){
-    local _data=$( cat $IDXDATA 2>/dev/null )
+    local _data=$( cat "$IDXDATA" 2>/dev/null )
     test -z "$_data" && _data="<li>WARNING: no project was rendered yet.</li>"
-    cat $IDXTEMPLATE | sed "s#__CONTENT__#$_data#g" >$IDX
-    ls -l $IDX
-    rm -f $IDXDATA
+    sed "s#__CONTENT__#$_data#g" "$IDXTEMPLATE" >"$IDX"
+    ls -l "$IDX"
+    rm -f "$IDXDATA"
 }
 
 # loop over config entries to re-generate the static doc pages
@@ -85,24 +86,23 @@ function processRepos(){
 
     mkdir "$SELFDIR/public_html" 2>/dev/null
 
-    _getRepos | while read _line
+    # _getRepos | while read -r _line
+    _getRepos | while IFS="|" read -r _url _label
     do
-        _url=$( echo $_line | cut -f 1 -d '|' )
-        _prj=$( echo $_url | rev | cut -f 1 -d '/' | rev | sed "s#.git##" )
-        _label=$( echo $_line | cut -f 2 -d '|' )
+        _prj=$( echo "$_url" | rev | cut -f 1 -d '/' | rev | sed "s#.git##" )
 
-        echo ---------- $_prj - $_url
+        echo "---------- $_prj - $_url"
         echo
 
-        _dirgit=$SELFDIR/tmp/$_prj
-        _dirdoc=$SELFDIR/public_html/$_prj
+        _dirgit="$SELFDIR/tmp/$_prj"
+        _dirdoc="$SELFDIR/public_html/$_prj"
 
         _gitUpdate "$_url" "$_dirgit"
 
         rm -rf "$_dirdoc" 2>/dev/null
 
-        daux generate -s "$SELFDIR/tmp/$_prj/docs" -d "$_dirdoc"
-        if [ $? -eq 0 ]; then
+        if daux generate -s "$SELFDIR/tmp/$_prj/docs" -d "$_dirdoc";
+        then
             add2Index "$_prj" "$_label"
         else
             echo "ERROR occured in Daux generator ... removing target dir $_dirdoc"
@@ -112,7 +112,7 @@ function processRepos(){
         echo
     done
 
-    echo ---------- generate overview
+    echo "---------- generate overview"
     echo
     generateIndex
     echo
