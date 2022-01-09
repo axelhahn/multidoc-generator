@@ -3,7 +3,7 @@
 To generate the overview page with all projects the template `./config/index.html.template` will be used.
 
 
-```
+```html
 <!doctype html>
 <html>
     <head>

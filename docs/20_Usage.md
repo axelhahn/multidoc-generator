@@ -1,13 +1,15 @@
-# Usage #
+# Start generator #
 
 Run `generate_docs.sh` to clone/ pull the configured repositories
 and generate static html pages with daux.
+
+# Output #
 
 The ouput is in the public_html directory. You can rsync its content
 to a webroot (or a subdir in it) of a webservice or just open
 the generated static html files locally.
 
-```
+```text
 .
 :
 ├── public_html/
