@@ -30,6 +30,10 @@ function checkRequirements(){
         echo "ERROR: Install daux first and add it to \$PATH"
         exit 1
     fi
+    if ! which jq >/dev/null; 
+    then
+        echo "WARNING: Binary jq was not found. It is highly recommended to install it."
+    fi
 }
 
 
@@ -57,20 +61,57 @@ function _gitUpdate(){
 
 }
 
-# add a LI item for a project doc in the index page
+# helper function for add2Index()
+# get a meta info from docs/config.json of the selected repository
+# A "null" result will be returned as empty string
+# param  string  path to cloned git repo
+# param  string  jq filter, i.e. ".title"
+function _getFromRepoJson(){
+    local _dirgit=$1
+    local _filter=$2
+    jq "${_filter}" "${_dirgit}/docs/config.json" 2>/dev/null | grep -v "null" | tr -d '"'
+}
+
+# add a table row for a project doc in the index page
+# param  string  project subdir in ./public_html/
+# param  string  label of the project (optional; overriden by config.json)
+# param  string  url of the repository
+# param  string  dir of the cloned directory
 function add2Index(){
     local _prj=$1
     local _label=$2
     local _url=$3
     local _dirgit=$4
+
     local _lastlog=
     local _log=
+
+    local _visLabel=
+    local _visDescr=
+    local _visAuthor=
+
     # echo "<li><a href=\"$_prj\">$_label</a></li>" >>"$IDXDATA"
-    cd "$_dirgit" && _lastlog="$( git log -1 )" && cd - >/dev/null
+    if [ -d "$_dirgit" ]; then
+        cd "$_dirgit" || exit 1
+        _lastlog="$( git log -1 )" 
+        cd - >/dev/null || exit 1
+        _visLabel=$(  _getFromRepoJson "${_dirgit}" ".title"   )
+        _visDescr=$(  _getFromRepoJson "${_dirgit}" ".tagline" )
+        _visAuthor=$( _getFromRepoJson "${_dirgit}" ".author"  )
+    fi
+
+    test -z "$_visLabel" && _visLabel="${_label}"
+    test -z "$_visDescr" || _visDescr="${_visDescr}<br>"
+    test -z "$_visAuthor" || _visAuthor="Author: ${_visAuthor}<br>"
+
     test -z "$_lastlog" || _log=$( echo "$_lastlog" | tr "<" '[' | tr '>' ']' | sed ':a;N;$!ba;s/\n/<br>/g' )
 
     echo "<tr>
-        <td><a href=\"${_prj}/\"><strong>${_label}</strong></a></td>
+        <td>
+            <a href=\"${_prj}/\"><strong>${_visLabel}</strong></a><br>
+            $_visDescr
+            $_visAuthor
+        </td>
         <td><a href=\"${_url}\" target=\"_blank\">${_url}</a></td>
         <td><pre>${_log}</pre></td>
     </tr>" >>"$IDXDATA"
