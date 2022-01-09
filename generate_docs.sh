@@ -61,8 +61,19 @@ function _gitUpdate(){
 function add2Index(){
     local _prj=$1
     local _label=$2
+    local _url=$3
+    local _dirgit=$4
+    local _lastlog=
+    local _log=
     # echo "<li><a href=\"$_prj\">$_label</a></li>" >>"$IDXDATA"
-    echo "<tr><td><a href=\"$_prj\">$_label</a></td></tr>" >>"$IDXDATA"
+    cd "$_dirgit" && _lastlog="$( git log -1 )" && cd - >/dev/null
+    test -z "$_lastlog" || _log=$( echo "$_lastlog" | tr "<" '[' | tr '>' ']' | sed ':a;N;$!ba;s/\n/<br>/g' )
+
+    echo "<tr>
+        <td><a href=\"${_prj}/\"><strong>${_label}</strong></a></td>
+        <td><a href=\"${_url}\" target=\"_blank\">${_url}</a></td>
+        <td><pre>${_log}</pre></td>
+    </tr>" >>"$IDXDATA"
 }
 
 # generate index.html with overview of all doc pages
@@ -77,13 +88,18 @@ function generateIndex(){
                 <thead>
                     <tr>
                         <th>App</th>
+                        <th>Repository</th>
+                        <th>Last commit</th>
                     </tr>
                 </thead>
                 <tbody>
                     $_data
                 </tbody>
             </table>
+
+
         "
+        # echo "$_data"
         _data=$( echo "$_data" | tr -d "\n" )
     fi
 
@@ -122,7 +138,7 @@ function processRepos(){
 
         if daux generate -s "$SELFDIR/tmp/$_prj/docs" -d "$_dirdoc";
         then
-            add2Index "$_prj" "$_label"
+            add2Index "$_prj" "$_label" "$_url" "$_dirgit"
         else
             echo "ERROR occured in Daux generator ... removing target dir $_dirdoc"
             rm -rf "$_dirdoc"
