@@ -6,6 +6,7 @@
 # ----------------------------------------------------------------------
 # 2022-01-07   ah   v0.1  first lines
 # 2022-01-08   ah   v0.2  fixes found by shellcheck
+# 2022-01-09   ah   v0.3  index page template with datatables
 # ======================================================================
 
 SELFDIR=$( dirname "$0" )
@@ -15,7 +16,7 @@ IDX=$SELFDIR/public_html/index.html
 
 IDXDATA=/tmp/index_$$
 
-# ABOUT="MULTI DOC GENERATOR using DAUX v 0.2 - $( date )"
+# ABOUT="MULTI DOC GENERATOR using DAUX v 0.3 - $( date )"
 
 # ----------------------------------------------------------------------
 # FUNCTIONS
@@ -60,15 +61,33 @@ function _gitUpdate(){
 function add2Index(){
     local _prj=$1
     local _label=$2
-    echo "<li><a href=\"$_prj\">$_label</a></li>" >>"$IDXDATA"
+    # echo "<li><a href=\"$_prj\">$_label</a></li>" >>"$IDXDATA"
+    echo "<tr><td><a href=\"$_prj\">$_label</a></td></tr>" >>"$IDXDATA"
 }
 
 # generate index.html with overview of all doc pages
 # It reads the ./config/index.html.template
 function generateIndex(){
     local _data=$( cat "$IDXDATA" 2>/dev/null )
-    test -z "$_data" && _data="<li>WARNING: no project was rendered yet.</li>"
-    sed "s#__CONTENT__#$_data#g" "$IDXTEMPLATE" >"$IDX"
+    if [ -z "$_data" ]; then
+        _data="WARNING: no project was rendered yet."
+    else 
+        _data="
+            <table id=\"table_id\" class=\"display\">
+                <thead>
+                    <tr>
+                        <th>App</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    $_data
+                </tbody>
+            </table>
+        "
+        _data=$( echo "$_data" | tr -d "\n" )
+    fi
+
+    sed "s#__CONTENT__#${_data}#g" "$IDXTEMPLATE" >"$IDX"
     ls -l "$IDX"
     rm -f "$IDXDATA"
 }
