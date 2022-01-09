@@ -10,14 +10,14 @@ Extract archive anywhere. The result is:
 
 ```text
 .
-├── config
+├── config/
 │  ├── index.html.template.dist
 │  └── repos.cfg.dist
-├── docs
+├── docs/
 ├── generate_docs.sh
 ├── LICENSE
-├── public_html
-└── tmp
+├── public_html/
+└── tmp/
 ```
 
 # Initialize config #
