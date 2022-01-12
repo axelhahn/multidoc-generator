@@ -11,7 +11,7 @@ Extract archive anywhere. The result is:
 ```text
 .
 ├── config/
-│  ├── index.html.template.dist
+│  ├── overview.template.datatable.dist
 │  └── repos.cfg.dist
 ├── docs/
 ├── generate_docs.sh
@@ -23,6 +23,8 @@ Extract archive anywhere. The result is:
 # Initialize config #
 
 Go to `./config/` directory.
-* copy *.dist files to the same name but without .dist
-* edit config file in ./config/repos.cfg and add the repositories here
-* edit ./config/index.html.template to style the overview page
+* copy *.dist files to a name but without .dist
+  * repos.cfg.dist --> repos.cfg
+  * overview.template.datatable.dist --> overview.template (remove ".datatable" too!)
+* edit config file in ./config/repos.cfg and add the repositories here; see [Configuration](30_Configuration.md)
+
