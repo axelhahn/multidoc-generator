@@ -3,7 +3,7 @@
 ## Description ##
 
 A bash script to generate a collection of docs
-from a list oven repositories. Those must have a docs
+from a list of repositories. Those must have a docs
 subdirectory what can be generated to static files
 with Daux <https://daux.io/>
 
