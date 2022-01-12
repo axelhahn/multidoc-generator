@@ -7,16 +7,17 @@
 # 2022-01-07   ah   v0.1  first lines
 # 2022-01-08   ah   v0.2  fixes found by shellcheck
 # 2022-01-09   ah   v0.3  index page template with datatables
+# 2022-01-13   ah   v0.4  use config/overview.template for html page and entry templating
 # ======================================================================
 
 SELFDIR=$( dirname "$0" )
 CFG="$SELFDIR/config/repos.cfg"
-IDXTEMPLATE=$SELFDIR/config/index.html.template
+OVERVIEW_TEMPLATE=$SELFDIR/config/overview.template
 IDX=$SELFDIR/public_html/index.html
 
 IDXDATA=/tmp/index_$$
 
-# ABOUT="MULTI DOC GENERATOR using DAUX v 0.3 - $( date )"
+# ABOUT="MULTI DOC GENERATOR using DAUX v 0.4 - $( date )"
 
 # ----------------------------------------------------------------------
 # FUNCTIONS
@@ -78,73 +79,51 @@ function _getFromRepoJson(){
 # param  string  url of the repository
 # param  string  dir of the cloned directory
 function add2Index(){
-    local _prj=$1
+    local __url_doc__=$1
     local _label=$2
-    local _url=$3
+    local __url_repo__=$3
     local _dirgit=$4
 
     local _lastlog=
-    local _log=
 
-    local _visLabel=
-    local _visDescr=
-    local _visAuthor=
+    # the variables in the config/overview.template
+    local __label__=
+    local __descr__=
+    local __author__=
+    local __commit__=
 
-    # echo "<li><a href=\"$_prj\">$_label</a></li>" >>"$IDXDATA"
     if [ -d "$_dirgit" ]; then
         cd "$_dirgit" || exit 1
         _lastlog="$( git log -1 )" 
         cd - >/dev/null || exit 1
-        _visLabel=$(  _getFromRepoJson "${_dirgit}" ".title"   )
-        _visDescr=$(  _getFromRepoJson "${_dirgit}" ".tagline" )
-        _visAuthor=$( _getFromRepoJson "${_dirgit}" ".author"  )
+        __label__=$(  _getFromRepoJson "${_dirgit}" ".title"   )
+        __descr__=$(  _getFromRepoJson "${_dirgit}" ".tagline" )
+        __author__=$( _getFromRepoJson "${_dirgit}" ".author"  )
     fi
 
-    test -z "$_visLabel" && _visLabel="${_label}"
-    test -z "$_visDescr" || _visDescr="${_visDescr}<br>"
-    test -z "$_visAuthor" || _visAuthor="Author: ${_visAuthor}<br>"
+    test -z "$__label__" && __label__="${_label}"
+    test -z "$__descr__" || __descr__="${__descr__}<br>"
+    test -z "$__author__" || __author__="Author: ${__author__}<br>"
 
-    test -z "$_lastlog" || _log=$( echo "$_lastlog" | tr "<" '[' | tr '>' ']' | sed ':a;N;$!ba;s/\n/<br>/g' )
+    # test -z "$_lastlog" || __commit__=$( echo "$_lastlog" | tr "<" '[' | tr '>' ']' | sed ':a;N;$!ba;s/\n/<br>/g' )
+    test -z "$_lastlog" || __commit__=$( echo "$_lastlog" | grep -E "^(Author|Date)" | tr "<" '[' | tr '>' ']' | sed ':a;N;$!ba;s/\n/<br>/g')
 
-    echo "<tr>
-        <td>
-            <a href=\"${_prj}/\"><strong>${_visLabel}</strong></a><br>
-            $_visDescr
-            $_visAuthor
-        </td>
-        <td><a href=\"${_url}\" target=\"_blank\">${_url}</a></td>
-        <td><pre>${_log}</pre></td>
-    </tr>" >>"$IDXDATA"
+    . "${OVERVIEW_TEMPLATE}"
+    echo "${html_element}" >> "$IDXDATA"
 }
 
 # generate index.html with overview of all doc pages
-# It reads the ./config/index.html.template
+# It reads the ./config/overview.template
 function generateIndex(){
-    local _data=$( cat "$IDXDATA" 2>/dev/null )
-    if [ -z "$_data" ]; then
-        _data="WARNING: no project was rendered yet."
-    else 
-        _data="
-            <table id=\"table_id\" class=\"display\">
-                <thead>
-                    <tr>
-                        <th>App</th>
-                        <th>Repository</th>
-                        <th>Last commit</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    $_data
-                </tbody>
-            </table>
-
-
-        "
-        # echo "$_data"
-        _data=$( echo "$_data" | tr -d "\n" )
+    local _data
+    __CONTENT__=$( cat "$IDXDATA" 2>/dev/null )
+    if [ -z "$__CONTENT__" ]; then
+        __CONTENT__="WARNING: no project was rendered yet."
     fi
 
-    sed "s#__CONTENT__#${_data}#g" "$IDXTEMPLATE" >"$IDX"
+    . "${OVERVIEW_TEMPLATE}"
+    echo "${html_page}" >"$IDX"
+
     ls -l "$IDX"
     rm -f "$IDXDATA"
 }
@@ -222,7 +201,6 @@ esac
 checkRequirements
 processRepos
 
-# cat $IDX
 echo "--- DONE."
 
 # ----------------------------------------------------------------------
