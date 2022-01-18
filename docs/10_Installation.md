@@ -11,6 +11,7 @@ Extract archive anywhere. The result is:
 ```text
 .
 ├── config/
+│  ├── overview.template.boxes.dist
 │  ├── overview.template.datatable.dist
 │  └── repos.cfg.dist
 ├── docs/
@@ -23,6 +24,7 @@ Extract archive anywhere. The result is:
 # Initialize config #
 
 Go to `./config/` directory.
+
 * copy *.dist files to a name but without .dist
   * repos.cfg.dist --> repos.cfg
   * overview.template.datatable.dist --> overview.template (remove ".datatable" too!)
