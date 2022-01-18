@@ -1,4 +1,4 @@
 config/repos.cfg
-config/index.html.template
+config/overview.template
 public_html/*
 tmp/*
