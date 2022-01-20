@@ -8,6 +8,7 @@
 # 2022-01-08   ah   v0.2  fixes found by shellcheck
 # 2022-01-09   ah   v0.3  index page template with datatables
 # 2022-01-13   ah   v0.4  use config/overview.template for html page and entry templating
+# 2022-01-20   ah   v0.5  added groups
 # ======================================================================
 
 SELFDIR=$( dirname "$0" )
@@ -16,6 +17,8 @@ OVERVIEW_TEMPLATE=$SELFDIR/config/overview.template
 IDX=$SELFDIR/public_html/index.html
 
 IDXDATA=/tmp/index_$$
+
+__group__=
 
 # ABOUT="MULTI DOC GENERATOR using DAUX v 0.4 - $( date )"
 
@@ -112,6 +115,15 @@ function add2Index(){
     echo "${html_element}" >> "$IDXDATA"
 }
 
+# add section for a group
+# param  string  name of the group
+function addGroup(){
+    __group__=$1
+    . "${OVERVIEW_TEMPLATE}"
+    echo "${html_group}" >> "$IDXDATA"
+}
+
+
 # generate index.html with overview of all doc pages
 # It reads the ./config/overview.template
 function generateIndex(){
@@ -144,24 +156,30 @@ function processRepos(){
     # _getRepos | while read -r _line
     _getRepos | while IFS="|" read -r _url _label
     do
-        _prj=$( echo "$_url" | rev | cut -f 1 -d '/' | rev | sed "s#.git##" )
-
-        echo "---------- $_prj - $_url"
-        echo
-
-        _dirgit="$SELFDIR/tmp/$_prj"
-        _dirdoc="$SELFDIR/public_html/$_prj"
-
-        _gitUpdate "$_url" "$_dirgit"
-
-        rm -rf "$_dirdoc" 2>/dev/null
-
-        if daux generate -s "$SELFDIR/tmp/$_prj/docs" -d "$_dirdoc";
-        then
-            add2Index "$_prj" "$_label" "$_url" "$_dirgit"
+        echo "DEBUG: $_url .. $_label"
+        if test "$_url" = "group"; then
+            echo "---------- ADD GROUP $_label"
+            addGroup "$_label"
         else
-            echo "ERROR occured in Daux generator ... removing target dir $_dirdoc"
-            rm -rf "$_dirdoc"
+            _prj=$( echo "$_url" | rev | cut -f 1 -d '/' | rev | sed "s#.git##" )
+
+            echo "---------- $_prj - $_url"
+            echo
+
+            _dirgit="$SELFDIR/tmp/$_prj"
+            _dirdoc="$SELFDIR/public_html/$_prj"
+
+            _gitUpdate "$_url" "$_dirgit"
+
+            rm -rf "$_dirdoc" 2>/dev/null
+
+            if daux generate -s "$SELFDIR/tmp/$_prj/docs" -d "$_dirdoc";
+            then
+                add2Index "$_prj" "$_label" "$_url" "$_dirgit"
+            else
+                echo "ERROR occured in Daux generator ... removing target dir $_dirdoc"
+                rm -rf "$_dirdoc"
+            fi
         fi
         
         echo
