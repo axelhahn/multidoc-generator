@@ -7,6 +7,7 @@
 # --------------------------------------------------------------------------------
 # 2021-01-19  v0.1  ahahn  init
 # 2021-01-20  v0.2  ahahn  added groups and filter
+# 2021-01-21  v0.3  ahahn  update filter box: counter of visible items
 # ================================================================================
 
 
@@ -24,6 +25,9 @@ html_page="<!doctype html>
             a{color: #23a; }
             h1{margin: 0 0 1em;}
             h2{margin: 0 0 1em; clear: left; border-top: 2px dashed #ddd; padding-top: 0.5em}
+            div#filterbox{float: right; text-align: center;}
+            div#filterbox input{font-size: 130%; border-radius: 1em; border: 1px solid #ddd; padding: 0.1em 0.6em;}
+            div#filterbox input:focus{border: 1px solid #abc !important;}
             div.box{float: left; width: 23%; min-width: 20em; border: 1px solid #eee; border-radius: 0.5em; margin: 0 1% 2em 0; background:#fff; height: 12em; box-shadow: none; transition: all 0.3s}
             div.box:hover{box-shadow: 0 0 2em #ddd;border-color: #ccc; }
             div.boxheader{background: rgba(0,0,0,0.1); padding: 0.5em 1em; border-radius: 0.5em 0.5em 0 0 ; }
@@ -32,25 +36,36 @@ html_page="<!doctype html>
         </style>
         <script>
             var idInput='eFilter';
+            var idCount='idCount';
             function filter(){
                 var sText=document.getElementById(idInput).value;
                 var obj = document.getElementsByClassName('box');
+                var iCount=obj.length;
+                var iVisible=0;
                 for (i = 0; i < obj.length; i++) {
                     regex = RegExp(sText, 'i');
                     obj[i].style.display=( !sText || regex.test(obj[i].innerText) )
                         ? 'block'
                         : 'none'
                     ;
-                }        
+                    iVisible+=obj[i].style.display=='block' ? 1 : 0;
+                }
+                var sVisText='';
+                if(iVisible==iCount){ sVisText=iCount+' (all)'; }
+                if(iVisible<iCount){ sVisText=iVisible+'/ '+iCount; }
+                if(iVisible==0){ sVisText='(none)'; }
+                document.getElementById(idCount).innerText='Visible: '+sVisText;
             }
             window.setTimeout('filter()', 20);
         </script>
     </head>
     <body>
+        <div id=\"filterbox\">
+            Filter:
+            <input type=\"text\" id=\"eFilter\" autofocus onchange=\"filter();\" onkeyup=\"filter();\" onchange=\"filter();\" value=\"\" size=\"20\" placeholder=\"Start to type ...\"><br>
+            <span id=\"idCount\"></span>
+        </div>
         <h1>My Docs</h1>
-
-        Filter:
-        <input type="text" id=\"eFilter\" onchange=\"filter();\" onkeyup=\"filter();\" onchange=\"filter();\" value=\"\" size=\"20\" placeholder=\"Start to type ...\"><br><br>
 
         <div>
             ${__CONTENT__}        
