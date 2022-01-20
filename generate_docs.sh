@@ -9,6 +9,7 @@
 # 2022-01-09   ah   v0.3  index page template with datatables
 # 2022-01-13   ah   v0.4  use config/overview.template for html page and entry templating
 # 2022-01-20   ah   v0.5  added groups
+# 2022-01-21   ah   v0.6  added footer with link to repo
 # ======================================================================
 
 SELFDIR=$( dirname "$0" )
@@ -20,7 +21,8 @@ IDXDATA=/tmp/index_$$
 
 __group__=
 
-# ABOUT="MULTI DOC GENERATOR using DAUX v 0.4 - $( date )"
+_repo="https://github.com/axelhahn/multidoc-generator"
+__ABOUT__="<a href=\"$_repo\" target=\"_blank\">Axels MULTI DOC GENERATOR using DAUX v 0.6</a> - $( date +%Y-%m-%d\ %H:%M )"
 
 # ----------------------------------------------------------------------
 # FUNCTIONS
