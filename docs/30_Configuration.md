@@ -13,20 +13,23 @@ In a line divide values with pipe `|`
 
 # Example #
 
-Example with 2 entries:
+Example with a group and 2 entries:
 
 ```text
 # ----------------------------------------------------------------------
 # CONFIG
 #
-# Syntax:
-# [Repo url] | [Label]
+# --- SYNTAX:
+# group|[Label]
+# [Repo url]|[Label]
 #
-# Example:
+# --- EXAMPLE:
+# group|PHP projects
 # https://github.com/iml-it/appmonitor.git|IML Appmonitor
 #
 # ----------------------------------------------------------------------
 
+group|PHP projects
 https://github.com/axelhahn/multidoc-generator.git|Axels Multidoc generator|
 https://github.com/iml-it/appmonitor.git|IML Appmonitor|
 

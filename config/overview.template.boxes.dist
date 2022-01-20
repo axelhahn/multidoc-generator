@@ -6,6 +6,7 @@
 #
 # --------------------------------------------------------------------------------
 # 2021-01-19  v0.1  ahahn  init
+# 2021-01-20  v0.2  ahahn  added groups and filter
 # ================================================================================
 
 
@@ -15,42 +16,76 @@
 html_page="<!doctype html>
 <html>
     <head>
-        <script src=\"https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js\" integrity=\"sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==\" crossorigin=\"anonymous\" referrerpolicy=\"no-referrer\"></script>
         <style>
-            body{background:#f8f8f8; color: #345; margin: 1% 3%;}
-            a{color: #23c; }
+            :root{
+                --color: "#345";
+            }
+            body{background:#f8f8f8; color: var(--color); margin: 1% 3%;}
+            a{color: #23a; }
             h1{margin: 0 0 1em;}
-            div.box{float: left; width: 23%; min-width: 20em; border: 1px solid #eee; border-radius: 0.5em; margin: 0 1% 2em 0; background:#fff; height: 12em; box-shadow: none; transition: all 0.5s}
+            h2{margin: 0 0 1em; clear: left; border-top: 2px dashed #ddd; padding-top: 0.5em}
+            div.box{float: left; width: 23%; min-width: 20em; border: 1px solid #eee; border-radius: 0.5em; margin: 0 1% 2em 0; background:#fff; height: 12em; box-shadow: none; transition: all 0.3s}
             div.box:hover{box-shadow: 0 0 2em #ddd;border-color: #ccc; }
             div.boxheader{background: rgba(0,0,0,0.1); padding: 0.5em 1em; border-radius: 0.5em 0.5em 0 0 ; }
+            div.boxheader a{color:var(--color);}
             div.boxcontent{margin: 1em;}
         </style>
+        <script>
+            var idInput='eFilter';
+            function filter(){
+                var sText=document.getElementById(idInput).value;
+                var obj = document.getElementsByClassName('box');
+                for (i = 0; i < obj.length; i++) {
+                    regex = RegExp(sText, 'i');
+                    obj[i].style.display=( !sText || regex.test(obj[i].innerText) )
+                        ? 'block'
+                        : 'none'
+                    ;
+                }        
+            }
+            window.setTimeout('filter()', 20);
+        </script>
     </head>
     <body>
         <h1>My Docs</h1>
 
-        ${__CONTENT__}
-        
+        Filter:
+        <input type="text" id=\"eFilter\" onchange=\"filter();\" onkeyup=\"filter();\" onchange=\"filter();\" value=\"\" size=\"20\" placeholder=\"Start to type ...\"><br><br>
+
+        <div>
+            ${__CONTENT__}        
+        </div>
+
     </body>
 </html>
 "
 
 # --------------------------------------------------------------------------------
-# The replacement for ${__CONTENT__} is multiple concatination per project
-# of the next html snippet "html_element"
+# The replacement for ${__CONTENT__} is multiple concatination of a
+# group ...
+# --------------------------------------------------------------------------------
+html_group="
+        </div>
+        <h2>${__group__}</h2>
+        <div>
+"
+
+# --------------------------------------------------------------------------------
+# and html snippets per project
 # --------------------------------------------------------------------------------
 html_element="
-    <div class="box">
-        <div class="boxheader">
-            <a href=\"${__url_doc__}/\"><strong>${__label__}</strong></a>
-        </div>
-        <div class="boxcontent">
-            ${__descr__}
-            ${__author__}
-            <br>
-            <a href=\"${__url_repo__}\" target=\"_blank\">${__url_repo__}</a>
-        </div>
-    </div>
+            <div class="box">
+                <div class="boxheader">
+                    <a href=\"${__url_doc__}/\"><strong>${__label__}</strong></a>
+                </div>
+                <div class="boxcontent">
+                    ${__descr__}
+                    ${__author__}
+                    <br>
+                    <a href=\"${__url_repo__}\" target=\"_blank\">${__url_repo__}</a>
+                </div>
+            </div>
+
 "
 
 # --------------------------------------------------------------------------------

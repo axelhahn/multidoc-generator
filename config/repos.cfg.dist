@@ -1,10 +1,12 @@
 # ----------------------------------------------------------------------
 # CONFIG
 #
-# Syntax:
-# [Repo url] | [Label]
+# --- SYNTAX:
+# group|[Label]
+# [Repo url]|[Label]
 #
-# Example:
+# --- EXAMPLE:
+# group|PHP projects
 # https://github.com/iml-it/appmonitor.git|IML Appmonitor
 #
 # ----------------------------------------------------------------------

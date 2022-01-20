@@ -15,6 +15,7 @@
             "GitHub Repo": "https://github.com/axelhahn/multidoc-generator"
         },
         "theme": "daux-blue",
+        "theme_": "axel",
         "search": true
     }
 }

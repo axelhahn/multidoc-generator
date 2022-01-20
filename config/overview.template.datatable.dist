@@ -54,8 +54,13 @@ html_page="<!doctype html>
 "
 
 # --------------------------------------------------------------------------------
-# The replacement for ${__CONTENT__} is multiple concatination per project
-# of the next html snippet "html_element"
+# The replacement for ${__CONTENT__} is multiple concatination of a
+# group ...
+# --------------------------------------------------------------------------------
+html_group=""
+
+# --------------------------------------------------------------------------------
+# and html snippets per project
 # --------------------------------------------------------------------------------
 html_element="
     <tr>
