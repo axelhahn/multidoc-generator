@@ -8,7 +8,7 @@
 # 2022-01-19  v0.1  ahahn  init
 # 2022-01-20  v0.2  ahahn  added groups and filter
 # 2022-01-21  v0.3  ahahn  update filter box: counter of visible items
-# 2022-01-21  v0.4  ahahn  added footer
+# 2022-04-01  v0.4  ahahn  add onclick attribute on a box
 # ================================================================================
 
 
@@ -30,10 +30,10 @@ html_page="<!doctype html>
             div#filterbox{float: right; text-align: center;}
             div#filterbox input{font-size: 130%; border-radius: 1em; border: 1px solid #ddd; padding: 0.1em 0.6em;}
             div#filterbox input:focus{border: 1px solid #abc !important;}
-            div.box{float: left; width: 23%; min-width: 20em; border: 1px solid #eee; border-radius: 0.5em; margin: 0 1% 2em 0; background:#fff; height: 12em; box-shadow: none; transition: all 0.3s}
-            div.box:hover{box-shadow: 0 0 2em #ddd;border-color: #ccc; }
-            div.boxheader{background: rgba(0,0,0,0.1); padding: 0.5em 1em; border-radius: 0.5em 0.5em 0 0 ; }
-            div.boxheader a{color:var(--color);}
+            div.box{float: left; width: 23%; min-width: 20em; border: 2px solid #eee; border-radius: 0.5em; margin: 0 1% 2em 0; background:#fff; height: 12em; box-shadow: none; transition: all 0.3s}
+            div.box:hover{box-shadow: 0 0 2em #ddd;border-color: #e0e2e8; cursor:pointer;}
+            div.boxheader{background: rgba(0,20,80,0.1); padding: 0.5em 1em; border-radius: 0.5em 0.5em 0 0 ; }
+            div.boxheader a{color:var(--color); font-weight: bold; text-decoration: none;}
             div.boxcontent{margin: 1em;}
         </style>
         <script>
@@ -93,7 +93,7 @@ html_group="
 # and html snippets per project
 # --------------------------------------------------------------------------------
 html_element="
-            <div class="box">
+            <div class="box" onclick=\"location.href='${__url_doc__}';\">
                 <div class="boxheader">
                     <a href=\"${__url_doc__}/\"><strong>${__label__}</strong></a>
                 </div>

@@ -10,10 +10,11 @@
 # 2022-01-13   ah   v0.4  use config/overview.template for html page and entry templating
 # 2022-01-20   ah   v0.5  added groups
 # 2022-01-21   ah   v0.6  added footer with link to repo
+# 2022-04-01   ah   v0.7  use a json config (parsed by jq)
 # ======================================================================
 
 SELFDIR=$( dirname "$0" )
-CFG="$SELFDIR/config/repos.cfg"
+GD_JSONCONFIG="$SELFDIR/config/repos.json"
 OVERVIEW_TEMPLATE=$SELFDIR/config/overview.template
 IDX=$SELFDIR/public_html/index.html
 
@@ -38,17 +39,13 @@ function checkRequirements(){
     fi
     if ! which jq >/dev/null; 
     then
-        echo "WARNING: Binary jq was not found. It is highly recommended to install it."
+        echo "WARNING: Binary jq was not found."
+        exit 1
     fi
 }
 
 
 # ----------------------------------------------------------------------
-
-# get uncommented lines from config file
-function _getRepos(){
-    grep "^[a-zA-Z]" "$CFG"
-}
 
 
 # get data from a repo with git clone or git pull
@@ -145,6 +142,10 @@ function generateIndex(){
 # loop over config entries to re-generate the static doc pages
 # and overview page
 function processRepos(){
+
+    typeset -i _iLength
+    typeset -i _iIdx
+
     local _url=
     local _prj=
     local _label=
@@ -155,26 +156,40 @@ function processRepos(){
 
     mkdir "$SELFDIR/public_html" 2>/dev/null
 
-    # _getRepos | while read -r _line
-    _getRepos | while IFS="|" read -r _url _label
+    # ----- WIP: JSON PARSING
+    jq ".[] .group" "$GD_JSONCONFIG" | while read _mygroup
     do
-        echo "DEBUG: $_url .. $_label"
-        if test "$_url" = "group"; then
-            echo "---------- ADD GROUP $_label"
-            addGroup "$_label"
-        else
+        echo "=============== adding GROUP = $_mygroup"
+        addGroup $( echo $_mygroup | tr -d '"' )
+        # | jq '.[] | select(.group=="first") .items'
+
+        echo "--- looping over group items ..."
+        _iLength=$( jq '.[] | select(.group=='$_mygroup') .items|length' "$GD_JSONCONFIG" )
+        for _iItem in $( seq $_iLength )
+        do
+            _iIdx=$_iItem-1
+            _item=$( jq '.[] | select(.group=='$_mygroup') .items['$_iIdx']' "$GD_JSONCONFIG" )
+
+            _url=$(    echo "$_item" | jq ".repo"    | tr -d '"')
+            _title=$(  echo "$_item" | jq ".title"   | tr -d '"')
+            _descr=$(  echo "$_item" | jq ".descr"   | tr -d '"')
+            _author=$( echo "$_item" | jq ".author"  | tr -d '"')
+
             _prj=$( echo "$_url" | rev | cut -f 1 -d '/' | rev | sed "s#.git##" )
 
+            echo
             echo "---------- $_prj - $_url"
             echo
 
             _dirgit="$SELFDIR/tmp/$_prj"
             _dirdoc="$SELFDIR/public_html/$_prj"
 
+            echo "--- update git repo"
             _gitUpdate "$_url" "$_dirgit"
+            echo
 
+            echo "--- generate docs"
             rm -rf "$_dirdoc" 2>/dev/null
-
             if daux generate -s "$SELFDIR/tmp/$_prj/docs" -d "$_dirdoc";
             then
                 add2Index "$_prj" "$_label" "$_url" "$_dirgit"
@@ -182,15 +197,53 @@ function processRepos(){
                 echo "ERROR occured in Daux generator ... removing target dir $_dirdoc"
                 rm -rf "$_dirdoc"
             fi
-        fi
+        done
         
-        echo
     done
-
-    echo "---------- generate overview"
+    echo
+    echo "---------- processing of projects finished. Generating overview..."
     echo
     generateIndex
     echo
+
+    # ----- / WIP: JSON PARSING
+
+    # # _getRepos | while read -r _line
+    # _getRepos | while IFS="|" read -r _url _label
+    # do
+    #     echo "DEBUG: $_url .. $_label"
+    #     if test "$_url" = "group"; then
+    #         echo "---------- ADD GROUP $_label"
+    #         addGroup "$_label"
+    #     else
+    #         _prj=$( echo "$_url" | rev | cut -f 1 -d '/' | rev | sed "s#.git##" )
+
+    #         echo "---------- $_prj - $_url"
+    #         echo
+
+    #         _dirgit="$SELFDIR/tmp/$_prj"
+    #         _dirdoc="$SELFDIR/public_html/$_prj"
+
+    #         _gitUpdate "$_url" "$_dirgit"
+
+    #         rm -rf "$_dirdoc" 2>/dev/null
+
+    #         if daux generate -s "$SELFDIR/tmp/$_prj/docs" -d "$_dirdoc";
+    #         then
+    #             add2Index "$_prj" "$_label" "$_url" "$_dirgit"
+    #         else
+    #             echo "ERROR occured in Daux generator ... removing target dir $_dirdoc"
+    #             rm -rf "$_dirdoc"
+    #         fi
+    #     fi
+        
+    #     echo
+    # done
+
+    # echo "---------- generate overview"
+    # echo
+    # generateIndex
+    # echo
 }
 
 # ----------------------------------------------------------------------
@@ -212,7 +265,7 @@ action=$1
 case $action in
     -h|--help|-?)
         echo "HELP:"
-        echo "NO PARAMS supported so far. All entries in $CFG will be processed."
+        echo "NO PARAMS supported so far. All entries in $GD_JSONCONFIG will be processed."
         echo
         exit 1
         ;;
