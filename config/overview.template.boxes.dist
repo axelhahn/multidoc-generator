@@ -9,6 +9,7 @@
 # 2022-01-20  v0.2  ahahn  added groups and filter
 # 2022-01-21  v0.3  ahahn  update filter box: counter of visible items
 # 2022-04-01  v0.4  ahahn  add onclick attribute on a box
+# 2022-04-01  v0.5  ahahn  css update; add intro text
 # ================================================================================
 
 
@@ -18,21 +19,30 @@
 html_page="<!doctype html>
 <html>
     <head>
+        <title>Docs :: Overview</title>
         <style>
             :root{
-                --color: "#345";
+                --color: #345;
+                --colorA: #23a;
+                --colorH1: #458;
+                --colorH2: #569;
+                --bgBody:#f8f8f8;
+                --bgBox:#fff;
+                --bgBoxHead:rgba(0,60,150,0.1);
+                --bgBoxHeadHover:rgba(0,60,120,0.04);
             }
-            body{background:#f8f8f8; color: var(--color); margin: 1% 3%;}
-            a{color: #23a; }
-            footer{position: fixed; bottom: 1em; right: 1em; background: rgba(0,0,0,0.05); padding: 0.5em;}
-            h1{margin: 0 0 1em;}
-            h2{margin: 0 0 1em; clear: left; border-top: 2px dashed #ddd; padding-top: 0.5em}
+            body{background:var(--bgBody); color: var(--color); margin: 1% 3% 2%;}
+            a{color: var(--colorA); }
+            footer{position: fixed; bottom: 1em; right: 1em; background: rgba(0,0,0,0.05); padding: 0.5em; opacity: 0.3;}
+            h1{margin: 0; color:var(--colorH1);}
+            h2{margin: 0; color:var(--colorH2); clear: left; padding: 0.7em; box-shadow: 0 0.2em 0.5em #fff inset; border-top-left-radius: 0.5em;}
             div#filterbox{float: right; text-align: center;}
             div#filterbox input{font-size: 130%; border-radius: 1em; border: 1px solid #ddd; padding: 0.1em 0.6em;}
             div#filterbox input:focus{border: 1px solid #abc !important;}
-            div.box{float: left; width: 23%; min-width: 20em; border: 2px solid #eee; border-radius: 0.5em; margin: 0 1% 2em 0; background:#fff; height: 12em; box-shadow: none; transition: all 0.3s}
-            div.box:hover{box-shadow: 0 0 2em #ddd;border-color: #e0e2e8; cursor:pointer;}
-            div.boxheader{background: rgba(0,20,80,0.1); padding: 0.5em 1em; border-radius: 0.5em 0.5em 0 0 ; }
+            div.box{float: left; width: 23%; min-width: 20em; border: 2px solid rgba(0,0,0,0.05); border-radius: 0.5em; margin: 0 1% 2em 0; background:var(--bgBox); height: 13em; box-shadow: none; transition: all 0.3s}
+            div.box:hover{box-shadow: 0 0 2em #ddd;border-color: rgba(0,0,0,0.1); cursor:pointer;}
+            div.boxheader{background: var(--bgBoxHead); padding: 0.5em 1em; border-radius: 0.4em 0.4em 0 0 ; transition: all 2s}
+            div.box:hover div.boxheader{background: var(--bgBoxHeadHover);}
             div.boxheader a{color:var(--color); font-weight: bold; text-decoration: none;}
             div.boxcontent{margin: 1em;}
         </style>
@@ -68,6 +78,7 @@ html_page="<!doctype html>
             <span id=\"idCount\"></span>
         </div>
         <h1>My Docs</h1>
+        <p>Docs of my tools...</p>
 
         <div>
             ${__CONTENT__}
