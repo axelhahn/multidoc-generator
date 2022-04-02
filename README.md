@@ -8,3 +8,5 @@ with Daux <https://daux.io/>
 License: GNU GPL 3.0
 
 [More Details](docs/)
+
+![Screenshot: Boxes](./docs/images/page_boxes.png)
