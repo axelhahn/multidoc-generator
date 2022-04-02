@@ -1,6 +1,6 @@
 # Start generator #
 
-Run `generate_docs.sh` to clone/ pull the configured repositories
+Run `./generate_docs.sh` to clone/ pull the configured repositories
 and generate static html pages with daux.
 
 # Output #
@@ -22,3 +22,7 @@ the generated static html files locally.
 │     └── themes/                     << subdirs and files of used daux theme
 :
 ```
+
+# Cronjob #
+
+You should use a cronjob to regenerate all docs. Start `./generate_docs.sh` in a cycle of your choice, eg. hourly.

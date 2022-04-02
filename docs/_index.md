@@ -24,3 +24,7 @@ License: GNU GPL 3.0
 * PHP 7.4 or 8
 * Daux - generator to create static html pages from markdown. See <https://daux.io/>
 * jq (optional but highly recommended)
+
+## Screenshot ##
+
+![Screenshot: Boxes](./images/page_boxes.png)

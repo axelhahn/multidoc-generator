@@ -7,6 +7,7 @@
 # --------------------------------------------------------------------------------
 # 2022-01-12  v0.1  ahahn  init
 # 2022-01-21  v0.2  ahahn  added footer
+# 2022-04-03  v0.3  ahahn  use page_title; add group and unicode icon for app.
 # ================================================================================
 
 
@@ -16,6 +17,7 @@
 html_page="<!doctype html>
 <html>
     <head>
+        <title>${__page_title__}</title>
         <script src=\"https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js\" integrity=\"sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==\" crossorigin=\"anonymous\" referrerpolicy=\"no-referrer\"></script>
         <link rel=\"stylesheet\" type=\"text/css\" href=\"https://cdn.datatables.net/1.11.3/css/jquery.dataTables.css\">
         <script type=\"text/javascript\" charset=\"utf8\" src=\"https://cdn.datatables.net/1.11.3/js/jquery.dataTables.js\"></script>
@@ -28,12 +30,14 @@ html_page="<!doctype html>
         </style>
     </head>
     <body>
-        <h1>My Docs</h1>
+        <h1>${__page_title__}</h1>
+        <p>${__page_descr__}</p>
 
         <table id=\"table_id\" class=\"display\">
             <thead>
                 <tr>
                     <th>App</th>
+                    <th>Group</th>
                     <th>Repository</th>
                     <th>Last commit</th>
                 </tr>
@@ -70,10 +74,11 @@ html_group=""
 html_element="
     <tr>
         <td>
-            <a href=\"${__url_doc__}/\"><strong>${__label__}</strong></a><br>
+            📙 <a href=\"${__url_doc__}/\"><strong>${__label__}</strong></a><br>
             ${__descr__}
             ${__author__}
         </td>
+        <td>${__group__}</td>
         <td><a href=\"${__url_repo__}\" target=\"_blank\">${__url_repo__}</a></td>
         <td><pre>${__commit__}</pre></td>
     </tr>

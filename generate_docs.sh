@@ -11,6 +11,7 @@
 # 2022-01-20   ah   v0.5  added groups
 # 2022-01-21   ah   v0.6  added footer with link to repo
 # 2022-04-01   ah   v0.7  use a json config (parsed by jq)
+# 2022-04-03   ah   v0.8  updated json config with page title
 # ======================================================================
 
 SELFDIR=$( dirname "$0" )
@@ -23,7 +24,7 @@ IDXDATA=/tmp/index_$$
 __group__=
 
 _repo="https://github.com/axelhahn/multidoc-generator"
-__ABOUT__="<a href=\"$_repo\" target=\"_blank\">Axels MULTI DOC GENERATOR using DAUX v 0.6</a> - $( date +%Y-%m-%d\ %H:%M )"
+__ABOUT__="<a href=\"$_repo\" target=\"_blank\">Axels MULTI DOC GENERATOR using DAUX v 0.8</a> - $( date +%Y-%m-%d\ %H:%M )"
 
 # ----------------------------------------------------------------------
 # FUNCTIONS
@@ -81,10 +82,11 @@ function _getFromRepoJson(){
 # param  string  url of the repository
 # param  string  dir of the cloned directory
 function add2Index(){
-    local __url_doc__=$1
-    local _label=$2
-    local __url_repo__=$3
-    local _dirgit=$4
+    local __group__=$1
+    local __url_doc__=$2
+    local _label=$3
+    local __url_repo__=$4
+    local _dirgit=$5
 
     local _lastlog=
 
@@ -117,16 +119,30 @@ function add2Index(){
 # add section for a group
 # param  string  name of the group
 function addGroup(){
-    __group__=$1
+    local __group__=$1
+    local __groupinfo__=$2
+
     . "${OVERVIEW_TEMPLATE}"
     echo "${html_group}" >> "$IDXDATA"
 }
 
+# close section for a group
+function closeGroup(){
+    . "${OVERVIEW_TEMPLATE}"
+    echo "${html_group_close}" >> "$IDXDATA"
+}
 
 # generate index.html with overview of all doc pages
 # It reads the ./config/overview.template
 function generateIndex(){
     local _data
+    local __page_title__
+    local __page_descr__
+    __page_title__=$( jq '.title' "$GD_JSONCONFIG" )
+    __page_title__=${__page_title__//\"/}
+    __page_descr__=$( jq '.descr' "$GD_JSONCONFIG" )
+    __page_descr__=${__page_descr__//\"/}
+
     __CONTENT__=$( cat "$IDXDATA" 2>/dev/null )
     if [ -z "$__CONTENT__" ]; then
         __CONTENT__="WARNING: no project was rendered yet."
@@ -146,6 +162,9 @@ function processRepos(){
     typeset -i _iLength
     typeset -i _iIdx
 
+    local _group=
+    local _groupinfo=
+
     local _url=
     local _prj=
     local _label=
@@ -157,18 +176,20 @@ function processRepos(){
     mkdir "$SELFDIR/public_html" 2>/dev/null
 
     # ----- WIP: JSON PARSING
-    jq ".[] .group" "$GD_JSONCONFIG" | while read _mygroup
+    jq ".sections[] .group" "$GD_JSONCONFIG" | while read _mygroup
     do
         echo "=============== adding GROUP = $_mygroup"
-        addGroup $( echo $_mygroup | tr -d '"' )
+        _group="${_mygroup//\"/}"
+        _groupinfo=$( jq '.sections[] | select(.group=='$_mygroup') .descr' "$GD_JSONCONFIG" )
+        addGroup "${_group}" "${_info//\"/}"
         # | jq '.[] | select(.group=="first") .items'
 
         echo "--- looping over group items ..."
-        _iLength=$( jq '.[] | select(.group=='$_mygroup') .items|length' "$GD_JSONCONFIG" )
+        _iLength=$( jq '.sections[] | select(.group=='$_mygroup') .items|length' "$GD_JSONCONFIG" )
         for _iItem in $( seq $_iLength )
         do
             _iIdx=$_iItem-1
-            _item=$( jq '.[] | select(.group=='$_mygroup') .items['$_iIdx']' "$GD_JSONCONFIG" )
+            _item=$( jq '.sections[] | select(.group=='$_mygroup') .items['$_iIdx']' "$GD_JSONCONFIG" )
 
             _url=$(    echo "$_item" | jq ".repo"    | tr -d '"')
             _title=$(  echo "$_item" | jq ".title"   | tr -d '"')
@@ -192,12 +213,14 @@ function processRepos(){
             rm -rf "$_dirdoc" 2>/dev/null
             if daux generate -s "$SELFDIR/tmp/$_prj/docs" -d "$_dirdoc";
             then
-                add2Index "$_prj" "$_label" "$_url" "$_dirgit"
+                add2Index "$_group" "$_prj" "$_label" "$_url" "$_dirgit"
             else
                 echo "ERROR occured in Daux generator ... removing target dir $_dirdoc"
                 rm -rf "$_dirdoc"
             fi
         done
+
+        closeGroup
         
     done
     echo
@@ -206,44 +229,6 @@ function processRepos(){
     generateIndex
     echo
 
-    # ----- / WIP: JSON PARSING
-
-    # # _getRepos | while read -r _line
-    # _getRepos | while IFS="|" read -r _url _label
-    # do
-    #     echo "DEBUG: $_url .. $_label"
-    #     if test "$_url" = "group"; then
-    #         echo "---------- ADD GROUP $_label"
-    #         addGroup "$_label"
-    #     else
-    #         _prj=$( echo "$_url" | rev | cut -f 1 -d '/' | rev | sed "s#.git##" )
-
-    #         echo "---------- $_prj - $_url"
-    #         echo
-
-    #         _dirgit="$SELFDIR/tmp/$_prj"
-    #         _dirdoc="$SELFDIR/public_html/$_prj"
-
-    #         _gitUpdate "$_url" "$_dirgit"
-
-    #         rm -rf "$_dirdoc" 2>/dev/null
-
-    #         if daux generate -s "$SELFDIR/tmp/$_prj/docs" -d "$_dirdoc";
-    #         then
-    #             add2Index "$_prj" "$_label" "$_url" "$_dirgit"
-    #         else
-    #             echo "ERROR occured in Daux generator ... removing target dir $_dirdoc"
-    #             rm -rf "$_dirdoc"
-    #         fi
-    #     fi
-        
-    #     echo
-    # done
-
-    # echo "---------- generate overview"
-    # echo
-    # generateIndex
-    # echo
 }
 
 # ----------------------------------------------------------------------

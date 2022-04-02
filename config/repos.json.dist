@@ -1,28 +1,29 @@
-[
-    {
-        "group": "PHP",
-        "items":
-            [
-                {
-                    "repo": "https://github.com/iml-it/appmonitor.git",
-                    "title": "IML Appmonitor",
-                    "descr": "Axels Multidoc generator",
-                    "author": "Axels Hahn"
-                    }
-            ]
-    },
-    {
-        "group": "Bash",
-        "items":
-            [
-                {
-                    "repo": "https://github.com/axelhahn/multidoc-generator.git"
-                },
-                {
-                    "repo": "https://git-repo.iml.unibe.ch/iml-open-source/iml-backup.git"
-                }
-                
-            ]
-    }   
-
-]
+{
+    "title": "Axels Open source docs",
+    "descr": "Docs of my tools...",
+    "sections":
+    [
+        {
+            "group": "Bash",
+            "descr": "Shellscript based stuff",
+            "items":
+                [
+                    {"repo": "https://github.com/axelhahn/multidoc-generator.git"},
+                    {"repo": "https://git-repo.iml.unibe.ch/iml-open-source/iml-backup.git"}                
+                ]
+        },
+        {
+            "group": "PHP",
+            "descr": "Projects written in PHP",
+            "items":
+                [
+                    {
+                        "repo": "https://github.com/iml-it/appmonitor.git",
+                        "title": "IML Appmonitor",
+                        "descr": "Axels Multidoc generator",
+                        "author": "Axels Hahn"
+                        }
+                ]
+        }
+    ]
+}
