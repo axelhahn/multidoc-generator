@@ -49,6 +49,17 @@ function checkRequirements(){
 # ----------------------------------------------------------------------
 
 
+# helper function for add2Index()
+# get a meta info from docs/config.json of the selected repository
+# A "null" result will be returned as empty string
+# param  string  path to cloned git repo
+# param  string  jq filter, i.e. ".title"
+function _getFromRepoJson(){
+    local _dirgit=$1
+    local _filter=$2
+    jq "${_filter}" "${_dirgit}/docs/config.json" 2>/dev/null | grep -v "null" | tr -d '"'
+}
+
 # get data from a repo with git clone or git pull
 function _gitUpdate(){
     local _url=$1
@@ -65,15 +76,20 @@ function _gitUpdate(){
 
 }
 
-# helper function for add2Index()
-# get a meta info from docs/config.json of the selected repository
-# A "null" result will be returned as empty string
-# param  string  path to cloned git repo
-# param  string  jq filter, i.e. ".title"
-function _getFromRepoJson(){
-    local _dirgit=$1
-    local _filter=$2
-    jq "${_filter}" "${_dirgit}/docs/config.json" 2>/dev/null | grep -v "null" | tr -d '"'
+# add section for a group
+# param  string  name of the group
+function addGroup(){
+    local __group__=$1
+    local __groupinfo__=$2
+
+    . "${OVERVIEW_TEMPLATE}"
+    echo "${html_group}" >> "$IDXDATA"
+}
+
+# close section for a group
+function closeGroup(){
+    . "${OVERVIEW_TEMPLATE}"
+    echo "${html_group_close}" >> "$IDXDATA"
 }
 
 # add a table row for a project doc in the index page
@@ -114,22 +130,6 @@ function add2Index(){
 
     . "${OVERVIEW_TEMPLATE}"
     echo "${html_element}" >> "$IDXDATA"
-}
-
-# add section for a group
-# param  string  name of the group
-function addGroup(){
-    local __group__=$1
-    local __groupinfo__=$2
-
-    . "${OVERVIEW_TEMPLATE}"
-    echo "${html_group}" >> "$IDXDATA"
-}
-
-# close section for a group
-function closeGroup(){
-    . "${OVERVIEW_TEMPLATE}"
-    echo "${html_group_close}" >> "$IDXDATA"
 }
 
 # generate index.html with overview of all doc pages
@@ -175,7 +175,7 @@ function processRepos(){
 
     mkdir "$SELFDIR/public_html" 2>/dev/null
 
-    # ----- WIP: JSON PARSING
+    # ----- JSON PARSING
     jq ".sections[] .group" "$GD_JSONCONFIG" | while read _mygroup
     do
         echo "=============== adding GROUP = $_mygroup"
