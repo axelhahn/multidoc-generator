@@ -3,7 +3,25 @@
 Run `./generate_docs.sh` to clone/ pull the configured repositories
 and generate static html pages with daux.
 
+# Git repositories #
+
+All processed repositories will be cloned/ pulled in tmp directory.
+```text
+.
+:
+├── tmp/
+│  ├── [PROJECT_1]/                   << subir for docs of a repo
+|  |   ├── docs/
+|  |   ├── ...
+|  |   └── ...
+|  :
+│  └── [PROJECT_N]/
+:
+```
+
 # Output #
+
+Per project the command `daux generate` will be started.
 
 The ouput is in the public_html directory. You can rsync its content
 to a webroot (or a subdir in it) of a webservice or just open

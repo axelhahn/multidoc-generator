@@ -21,10 +21,20 @@ License: GNU GPL 3.0
 
 ## Requirements ##
 
-* PHP 7.4 or 8
+* PHP 7.4 or 8 (CLI) and Composer <https://getcomposer.org/>
 * Daux - generator to create static html pages from markdown. See <https://daux.io/>
-* jq 
+* jq - JSON processor <https://stedolan.github.io/jq/>
+* Each handled project must have a subfolder docs that is compatible with Daux generator
+
+## Features ##
+
+* customizable project list (JSON)
+* customizable output (2 templates are deliver)
+* supports groups of projects (by programming language or type)
+* project list can be filtered
 
 ## Screenshot ##
+
+Generated index.html using the template with boxes (config/overview.template.boxes.dist):
 
 ![Screenshot: Boxes](./images/page_boxes.png)

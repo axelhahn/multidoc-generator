@@ -26,7 +26,7 @@ Extract archive anywhere. The result is:
 Go to `./config/` directory.
 
 * copy *.dist files to a name but without .dist
-  * repos.cfg.dist --> repos.cfg
-  * overview.template.datatable.dist --> overview.template (remove ".datatable" too!)
-* edit config file in ./config/repos.cfg and add the repositories here; see [Configuration](30_Configuration.md)
+  * repos.json.dist --> repos.json
+  * overview.template.boxes.dist --> overview.template (remove ".boxes" too!)
+* edit config file in ./config/repos.json and add the repositories here; see [Configuration](30_Configuration.md)
 
