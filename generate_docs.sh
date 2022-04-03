@@ -181,7 +181,7 @@ function processRepos(){
         echo "=============== adding GROUP = $_mygroup"
         _group="${_mygroup//\"/}"
         _groupinfo=$( jq '.sections[] | select(.group=='$_mygroup') .descr' "$GD_JSONCONFIG" )
-        addGroup "${_group}" "${_info//\"/}"
+        addGroup "${_group}" "${_groupinfo//\"/}"
         # | jq '.[] | select(.group=="first") .items'
 
         echo "--- looping over group items ..."
