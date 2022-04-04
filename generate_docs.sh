@@ -225,19 +225,24 @@ function processRepos(){
             if _gitUpdate "$_url" "$_dirgit"
             then 
                 echo NO CHANGE.
+                bSkipIndex=0
             else
                 echo
 
                 echo "--- generate docs"
                 rm -rf "$_dirdoc" 2>/dev/null
-                if daux generate -s "$SELFDIR/tmp/$_prj/docs" -d "$_dirdoc";
-                then
-                    add2Index "$_group" "$_prj" "$_label" "$_url" "$_dirgit"
-                else
-                    echo "ERROR occured in Daux generator ... removing target dir $_dirdoc"
-                    rm -rf "$_dirdoc"
-                fi
+                daux generate -s "$SELFDIR/tmp/$_prj/docs" -d "$_dirdoc";
+                bSkipIndex=$?
             fi
+
+            if test "$bSkipIndex" = "0"
+            then
+                add2Index "$_group" "$_prj" "$_label" "$_url" "$_dirgit"
+            else
+                echo "ERROR occured in Daux generator ... removing target dir $_dirdoc"
+                rm -rf "$_dirdoc"
+            fi
+
         done
 
         closeGroup
