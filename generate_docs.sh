@@ -12,6 +12,7 @@
 # 2022-01-21   ah   v0.6  added footer with link to repo
 # 2022-04-01   ah   v0.7  use a json config (parsed by jq)
 # 2022-04-03   ah   v0.8  updated json config with page title
+# 2022-04-04   ah   v0.9  detect change in git; fix spaces in jason values
 # ======================================================================
 
 SELFDIR=$( dirname "$0" )
@@ -24,7 +25,7 @@ IDXDATA=/tmp/index_$$
 __group__=
 
 _repo="https://github.com/axelhahn/multidoc-generator"
-__ABOUT__="<a href=\"$_repo\" target=\"_blank\">Axels MULTI DOC GENERATOR using DAUX v 0.8</a> - $( date +%Y-%m-%d\ %H:%M )"
+__ABOUT__="<a href=\"$_repo\" target=\"_blank\">Axels MULTI DOC GENERATOR using DAUX v 0.9</a> - $( date +%Y-%m-%d\ %H:%M )"
 
 # ----------------------------------------------------------------------
 # FUNCTIONS
@@ -64,23 +65,30 @@ function _getFromRepoJson(){
 function _gitUpdate(){
     local _url=$1
     local _dirgit=$2
+    local _rc=0
     if [ -d "$_dirgit" ]; then
-        echo "Update local data from repo..."
         cd "$_dirgit" || exit 1
+        _logBefore=$( git log -1 );
+        echo "Update local data from repo... with git pull "
         git pull
+        _logAfter=$( git log -1 ); 
+        if [ "$_logBefore" != "$_logAfter" ]; then
+            _rc=1
+        fi
         cd - >/dev/null || exit 1
     else
         echo "Cloning..."
         git clone "$_url" "$_dirgit"
+        _rc=1
     fi
-
+    return $_rc
 }
 
 # add section for a group
 # param  string  name of the group
 function addGroup(){
-    local __group__=$1
-    local __groupinfo__=$2
+    local __group__="$1"
+    local __groupinfo__="$2"
 
     . "${OVERVIEW_TEMPLATE}"
     echo "${html_group}" >> "$IDXDATA"
@@ -98,11 +106,13 @@ function closeGroup(){
 # param  string  url of the repository
 # param  string  dir of the cloned directory
 function add2Index(){
-    local __group__=$1
-    local __url_doc__=$2
-    local _label=$3
-    local __url_repo__=$4
-    local _dirgit=$5
+    local __group__="$1"
+    local __url_doc__="$2"
+    local _label="$3"
+    local __url_repo__="$4"
+    local _dirgit="$5"
+    local _descr="$6"
+    local _author="$7"
 
     local _lastlog=
 
@@ -121,12 +131,17 @@ function add2Index(){
         __author__=$( _getFromRepoJson "${_dirgit}" ".author"  )
     fi
 
+    # if empty in git dir then take defaults from manual config config/repos.json
     test -z "$__label__" && __label__="${_label}"
+    test -z "$__descr__" && __descr__="${_descr}"
+    test -z "$__author__" && __author__="${_author}"
+
+    # add br for spacing
     test -z "$__descr__" || __descr__="${__descr__}<br>"
     test -z "$__author__" || __author__="Author: ${__author__}<br>"
 
     # test -z "$_lastlog" || __commit__=$( echo "$_lastlog" | tr "<" '[' | tr '>' ']' | sed ':a;N;$!ba;s/\n/<br>/g' )
-    test -z "$_lastlog" || __commit__=$( echo "$_lastlog" | grep -E "^(Author|Date)" | tr "<" '[' | tr '>' ']' | sed ':a;N;$!ba;s/\n/<br>/g')
+    test -z "$_lastlog" || __commit__=$( echo "$_lastlog" | grep -E  "^(Author|Date)" | tr "<" '[' | tr '>' ']' | sed ':a;N;$!ba;s/\n/<br>/g')
 
     . "${OVERVIEW_TEMPLATE}"
     echo "${html_element}" >> "$IDXDATA"
@@ -184,7 +199,8 @@ function processRepos(){
         addGroup "${_group}" "${_groupinfo//\"/}"
         # | jq '.[] | select(.group=="first") .items'
 
-        echo "--- looping over group items ..."
+        echo
+        echo "looping over group items ..."
         _iLength=$( jq '.sections[] | select(.group=='$_mygroup') .items|length' "$GD_JSONCONFIG" )
         for _iItem in $( seq $_iLength )
         do
@@ -206,17 +222,21 @@ function processRepos(){
             _dirdoc="$SELFDIR/public_html/$_prj"
 
             echo "--- update git repo"
-            _gitUpdate "$_url" "$_dirgit"
-            echo
-
-            echo "--- generate docs"
-            rm -rf "$_dirdoc" 2>/dev/null
-            if daux generate -s "$SELFDIR/tmp/$_prj/docs" -d "$_dirdoc";
-            then
-                add2Index "$_group" "$_prj" "$_label" "$_url" "$_dirgit"
+            if _gitUpdate "$_url" "$_dirgit"
+            then 
+                echo NO CHANGE.
             else
-                echo "ERROR occured in Daux generator ... removing target dir $_dirdoc"
-                rm -rf "$_dirdoc"
+                echo
+
+                echo "--- generate docs"
+                rm -rf "$_dirdoc" 2>/dev/null
+                if daux generate -s "$SELFDIR/tmp/$_prj/docs" -d "$_dirdoc";
+                then
+                    add2Index "$_group" "$_prj" "$_label" "$_url" "$_dirgit"
+                else
+                    echo "ERROR occured in Daux generator ... removing target dir $_dirdoc"
+                    rm -rf "$_dirdoc"
+                fi
             fi
         done
 
