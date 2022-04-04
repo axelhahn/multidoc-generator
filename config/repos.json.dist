@@ -8,6 +8,12 @@
             "descr": "Shellscript based stuff",
             "items":
                 [
+                    {
+                        "subdir": "manuell_1",
+                        "title": "Static dir 1",
+                        "descr": "A Non-Daux-Doc",
+                        "author": "John Doe"
+                    },
                     {"repo": "https://github.com/axelhahn/multidoc-generator.git"},
                     {"repo": "https://git-repo.iml.unibe.ch/iml-open-source/iml-backup.git"}                
                 ]

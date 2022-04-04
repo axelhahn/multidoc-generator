@@ -18,7 +18,11 @@ A group item contains
 
 * repo - url to a git repo; it will be cloned in ./tmp/ and Daux will be used to generate its docs below public_html/[NAME]
 
-There are some overrides for ./tmp/[NAME]/docs/config.json. 
+OR
+
+* subdir - static, already existing subdir in public_html to be added in index too
+
+There are defaults that will be overrided by ./tmp/[NAME]/docs/config.json. 
 
 * title - title of a project
 * descr - description of a project
@@ -40,6 +44,12 @@ Example with 2 groups and some entries. The 2nd group "PHP" has one project usin
             "descr": "Shellscript based stuff",
             "items":
                 [
+                    {
+                        "subdir": "manuell_1",
+                        "title": "Static dir 1",
+                        "descr": "A Non-Daux-Doc",
+                        "author": "John Doe"
+                    },
                     {"repo": "https://github.com/axelhahn/multidoc-generator.git"},
                     {"repo": "https://git-repo.iml.unibe.ch/iml-open-source/iml-backup.git"}                
                 ]
@@ -58,5 +68,4 @@ Example with 2 groups and some entries. The 2nd group "PHP" has one project usin
                 ]
         }
     ]
-}
-```
+}```

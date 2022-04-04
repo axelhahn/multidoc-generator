@@ -54,6 +54,7 @@ In th folder ./config/ copy overview.template.boxes.dist to overview.template an
 # 2022-04-01  v0.4  ahahn  add onclick attribute on a box
 # 2022-04-01  v0.5  ahahn  css update; add intro text
 # 2022-04-03  v0.6  ahahn  add section; add title from json
+# 2022-04-05  v0.7  ahahn  darker box header
 # ================================================================================
 
 
@@ -72,10 +73,11 @@ html_page="<!doctype html>
                 --colorH2: #569;
                 --colorInfo: #679;
                 --colorInput: #c52;
+                --colorBoxHead:#fff;
                 --bgBody:#f8f8f8;
                 --bgBox:#fff;
-                --bgBoxHead:rgba(0,60,150,0.1);
-                --bgBoxHeadHover:rgba(0,60,120,0.04);
+                --bgBoxHead:#569;
+                --bgBoxHeadHover:#347;
             }
             body{background:var(--bgBody); color: var(--color); margin: 1% 3% 2%;}
             a{color: var(--colorA); }
@@ -86,11 +88,11 @@ html_page="<!doctype html>
             div#filterbox{text-align: center; background: #fff; top: 0; right: 0; padding: 0.5em; position: fixed; border-bottom-left-radius: 1em; z-index: 100;}
             div#filterbox input{font-size: 130%; border-radius: 1em; border: 1px solid #ddd; color: var(--colorInput); padding: 0.1em 0.6em;}
             div#filterbox input:focus{border: 1px solid #abc !important;}
-            div.box{float: left; width: 23%; min-width: 20em; border: 2px solid rgba(0,0,0,0.1); border-radius: 0.5em; margin: 0 1% 2em 0; background:var(--bgBox); height: 13em; box-shadow: none; opacity: 0.8; transition: all 0.3s}
-            div.box:hover{box-shadow: 0 0 2em #d0d4d8;border-color: rgba(0,0,0,0.15); cursor:pointer; opacity: 1;}
-            div.boxheader{background: var(--bgBoxHead); padding: 0.5em 1em; border-radius: 0.4em 0.4em 0 0 ; transition: all 2s}
+            div.box{float: left; width: 23%; min-width: 20em; border: 2px solid rgba(0,0,0,0.1); border-radius: 0.5em; margin: 0 1% 2em 0; background:var(--bgBox); height: 13em; box-shadow: none; opacity: 1; transition: all 0.3s}
+            div.box:hover{box-shadow: 0 0 2em #ccc;border-color: rgba(0,0,0,0.15); cursor:pointer; opacity: 1;}
+            div.boxheader{background: var(--bgBoxHead); padding: 0.5em 1em; border-radius: 0.4em 0.4em 0 0 ; transition: all 1s}
             div.box:hover div.boxheader{background: var(--bgBoxHeadHover);}
-            div.boxheader a{color:var(--color); font-weight: bold; text-decoration: none;}
+            div.boxheader a{color:var(--colorBoxHead); font-weight: bold; text-decoration: none;}
             div.boxcontent{margin: 1em;}
             p.groupinfo{color: var(--colorInfo); font-style: italic;  margin: 0;}
             section {display: flow-root; padding: 0.7em; box-shadow: 0 0.2em 0.5em #fff inset; border-top-left-radius: 0.5em;}

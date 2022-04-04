@@ -4,28 +4,33 @@
 # MULTI DOC GENERATOR using DAUX
 #
 # ----------------------------------------------------------------------
-# 2022-01-07   ah   v0.1  first lines
-# 2022-01-08   ah   v0.2  fixes found by shellcheck
-# 2022-01-09   ah   v0.3  index page template with datatables
-# 2022-01-13   ah   v0.4  use config/overview.template for html page and entry templating
-# 2022-01-20   ah   v0.5  added groups
-# 2022-01-21   ah   v0.6  added footer with link to repo
-# 2022-04-01   ah   v0.7  use a json config (parsed by jq)
-# 2022-04-03   ah   v0.8  updated json config with page title
-# 2022-04-04   ah   v0.9  detect change in git; fix spaces in jason values
+# 2022-01-07   ah   v0.1   first lines
+# 2022-01-08   ah   v0.2   fixes found by shellcheck
+# 2022-01-09   ah   v0.3   index page template with datatables
+# 2022-01-13   ah   v0.4   use config/overview.template for html page and entry templating
+# 2022-01-20   ah   v0.5   added groups
+# 2022-01-21   ah   v0.6   added footer with link to repo
+# 2022-04-01   ah   v0.7   use a json config (parsed by jq)
+# 2022-04-03   ah   v0.8   updated json config with page title
+# 2022-04-04   ah   v0.9   detect change in git; fix spaces in jason values
+# 2022-04-05   ah   v0.10  support of static dirs
 # ======================================================================
 
-SELFDIR=$( dirname "$0" )
-GD_JSONCONFIG="$SELFDIR/config/repos.json"
-OVERVIEW_TEMPLATE=$SELFDIR/config/overview.template
-IDX=$SELFDIR/public_html/index.html
+GD_VERSION="0.10"
 
-IDXDATA=/tmp/index_$$
+GD_GITREPO="https://github.com/axelhahn/multidoc-generator"
+GD_SELFDIR=$( dirname "$0" )
+GD_JSONCONFIG="$GD_SELFDIR/config/repos.json"
+GD_OVERVIEW_TEMPLATE=$GD_SELFDIR/config/overview.template
+GD_DIR_PUBLISH=$GD_SELFDIR/public_html
+GD_IDX=$GD_DIR_PUBLISH/index.html
+
+GD_IDXDATA=/tmp/index_$$
 
 __group__=
 
-_repo="https://github.com/axelhahn/multidoc-generator"
-__ABOUT__="<a href=\"$_repo\" target=\"_blank\">Axels MULTI DOC GENERATOR using DAUX v 0.9</a> - $( date +%Y-%m-%d\ %H:%M )"
+# will be inserted in footer:
+__ABOUT__="<a href=\"${GD_GITREPO}\" target=\"_blank\">MULTI DOC INDEX using DAUX :: v${GD_VERSION}</a> - $( date +%Y-%m-%d\ %H:%M )"
 
 # ----------------------------------------------------------------------
 # FUNCTIONS
@@ -99,14 +104,14 @@ function addGroup(){
     local __group__="$1"
     local __groupinfo__="$2"
 
-    . "${OVERVIEW_TEMPLATE}"
-    echo "${html_group}" >> "$IDXDATA"
+    . "${GD_OVERVIEW_TEMPLATE}"
+    echo "${html_group}" >> "$GD_IDXDATA"
 }
 
 # close section for a group
 function closeGroup(){
-    . "${OVERVIEW_TEMPLATE}"
-    echo "${html_group_close}" >> "$IDXDATA"
+    . "${GD_OVERVIEW_TEMPLATE}"
+    echo "${html_group_close}" >> "$GD_IDXDATA"
 }
 
 # add a table row for a project doc in the index page
@@ -152,8 +157,8 @@ function add2Index(){
     # test -z "$_lastlog" || __commit__=$( echo "$_lastlog" | tr "<" '[' | tr '>' ']' | sed ':a;N;$!ba;s/\n/<br>/g' )
     test -z "$_lastlog" || __commit__=$( echo "$_lastlog" | grep -E  "^(Author|Date)" | tr "<" '[' | tr '>' ']' | sed ':a;N;$!ba;s/\n/<br>/g')
 
-    . "${OVERVIEW_TEMPLATE}"
-    echo "${html_element}" >> "$IDXDATA"
+    . "${GD_OVERVIEW_TEMPLATE}"
+    echo "${html_element}" >> "$GD_IDXDATA"
 }
 
 # generate index.html with overview of all doc pages
@@ -167,16 +172,16 @@ function generateIndex(){
     __page_descr__=$( jq '.descr' "$GD_JSONCONFIG" )
     __page_descr__=${__page_descr__//\"/}
 
-    __CONTENT__=$( cat "$IDXDATA" 2>/dev/null )
+    __CONTENT__=$( cat "$GD_IDXDATA" 2>/dev/null )
     if [ -z "$__CONTENT__" ]; then
         __CONTENT__="WARNING: no project was rendered yet."
     fi
 
-    . "${OVERVIEW_TEMPLATE}"
-    echo "${html_page}" >"$IDX"
+    . "${GD_OVERVIEW_TEMPLATE}"
+    echo "${html_page}" >"$GD_IDX"
 
-    ls -l "$IDX"
-    rm -f "$IDXDATA"
+    ls -l "$GD_IDX"
+    rm -f "$GD_IDXDATA"
 }
 
 # loop over config entries to re-generate the static doc pages
@@ -189,6 +194,7 @@ function processRepos(){
     local _group=
     local _groupinfo=
 
+    local _subdir=
     local _url=
     local _prj=
     local _label=
@@ -197,7 +203,9 @@ function processRepos(){
     local _dirgit=
     local _dirdoc=
 
-    mkdir "$SELFDIR/public_html" 2>/dev/null
+    local _bSkipIndex
+
+    mkdir "$GD_SELFDIR/public_html" 2>/dev/null
 
     # ----- JSON PARSING
     jq ".sections[] .group" "$GD_JSONCONFIG" | while read _mygroup
@@ -214,43 +222,59 @@ function processRepos(){
         _iLength=$( jq '.sections[] | select(.group=='$_mygroup') .items|length' "$GD_JSONCONFIG" )
         for _iItem in $( seq $_iLength )
         do
+            _bSkipIndex=0
             _iIdx=$_iItem-1
             _item=$( jq '.sections[] | select(.group=='$_mygroup') .items['$_iIdx']' "$GD_JSONCONFIG" )
 
-            _url=$(    echo "$_item" | jq ".repo"    | tr -d '"')
+            # echo "DEBUG: item =  $_item"
+
             _title=$(  echo "$_item" | jq ".title"   | tr -d '"')
             _descr=$(  echo "$_item" | jq ".descr"   | tr -d '"')
             _author=$( echo "$_item" | jq ".author"  | tr -d '"')
 
-            _prj=$( echo "$_url" | rev | cut -f 1 -d '/' | rev | sed "s#.git##" )
+            _prj=$(    echo "$_item" | jq ".subdir"  | tr -d '"')
 
-            echo
-            echo "---------- $_prj - $_url"
-            echo
+            if [ "$_prj" != "null" ]; then
 
-            _dirgit="$SELFDIR/tmp/$_prj"
-            _dirdoc="$SELFDIR/public_html/$_prj"
+                echo
+                echo "---------- static dir: $_prj"
+                echo
+                _dirdoc="$GD_DIR_PUBLISH/$_prj"
+                test -d "$_dirdoc" || _bSkipIndex=1
 
-            echo "--- update git repo"
-            if _gitUpdate "$_url" "$_dirgit"
-            then 
-                echo NO CHANGE. Skipping Generation of docs with Daux.
-                bSkipIndex=0
             else
-                echo CHANGES DETECTED.
+
+                _url=$(    echo "$_item" | jq ".repo"    | tr -d '"')
+                _prj=$( echo "$_url" | rev | cut -f 1 -d '/' | rev | sed "s#.git##" )
+
+                echo
+                echo "---------- git repo: $_prj - $_url"
                 echo
 
-                echo "--- generate docs"
-                rm -rf "$_dirdoc" 2>/dev/null
-                daux generate -s "$SELFDIR/tmp/$_prj/docs" -d "$_dirdoc";
-                bSkipIndex=$?
+                _dirgit="$GD_SELFDIR/tmp/$_prj"
+                _dirdoc="$GD_DIR_PUBLISH/$_prj"
+
+                echo "--- update git repo"
+                if _gitUpdate "$_url" "$_dirgit"
+                then 
+                    echo NO CHANGE. Skipping Generation of docs with Daux.
+                else
+                    echo CHANGES DETECTED.
+                    echo
+
+                    echo "--- generate docs"
+                    rm -rf "$_dirdoc" 2>/dev/null
+                    daux generate -s "$GD_SELFDIR/tmp/$_prj/docs" -d "$_dirdoc";
+                    _bSkipIndex=$?
+                fi
             fi
 
-            if test "$bSkipIndex" = "0"
+            if test "$_bSkipIndex" = "0"
             then
-                add2Index "$_group" "$_prj" "$_label" "$_url" "$_dirgit"
+                echo \> add2Index "$_group" "$_prj" "$_title" "$_url" "$_dirgit" "$_descr" "$_author"
+                add2Index "$_group" "$_prj" "$_title" "$_url" "$_dirgit" "$_descr" "$_author"
             else
-                echo "ERROR occured in Daux generator ... removing target dir $_dirdoc"
+                echo "ERROR: do not add to index: $_dirdoc"
                 rm -rf "$_dirdoc"
             fi
 
