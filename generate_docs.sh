@@ -36,12 +36,21 @@ __ABOUT__="<a href=\"$_repo\" target=\"_blank\">Axels MULTI DOC GENERATOR using 
 function checkRequirements(){
     if ! which daux >/dev/null; 
     then
-        echo "ERROR: Install daux first and add it to \$PATH"
+        echo "ERROR: [daux] cannot be executed."
+        echo "- Install Daux first (see https://daux.io/) and"
+        echo "- Add its to \$PATH (e.g. ~/.config/composer/vendor/daux/daux.io/bin)"
         exit 1
     fi
     if ! which jq >/dev/null; 
     then
-        echo "WARNING: Binary jq was not found."
+        echo "ERROR: [jq] cannot be executed."
+        echo "Install jq first (eg. using package manager or download from https://stedolan.github.io/jq/)."
+        exit 1
+    fi
+    if ! jq '.' "$GD_JSONCONFIG" >/dev/null 2>&1
+    then
+        echo "ERROR: There is a syntax error in the config [${GD_JSONCONFIG}]."
+        jq '.' "$GD_JSONCONFIG"
         exit 1
     fi
 }
@@ -193,6 +202,7 @@ function processRepos(){
     # ----- JSON PARSING
     jq ".sections[] .group" "$GD_JSONCONFIG" | while read _mygroup
     do
+        echo
         echo "=============== adding GROUP = $_mygroup"
         _group="${_mygroup//\"/}"
         _groupinfo=$( jq '.sections[] | select(.group=='$_mygroup') .descr' "$GD_JSONCONFIG" )
@@ -224,9 +234,10 @@ function processRepos(){
             echo "--- update git repo"
             if _gitUpdate "$_url" "$_dirgit"
             then 
-                echo NO CHANGE.
+                echo NO CHANGE. Skipping Generation of docs with Daux.
                 bSkipIndex=0
             else
+                echo CHANGES DETECTED.
                 echo
 
                 echo "--- generate docs"
@@ -249,7 +260,7 @@ function processRepos(){
         
     done
     echo
-    echo "---------- processing of projects finished. Generating overview..."
+    echo "=============== processing of projects finished. Generating overview..."
     echo
     generateIndex
     echo
@@ -267,7 +278,6 @@ echo "
 |           --==##  Axels MULTI DOC GENERATOR using DAUX  ##==--                 |
 |                                                                                |
 +--------------------------------------------------------------------------------+
-
 
 "
 
