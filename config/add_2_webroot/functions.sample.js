@@ -1,0 +1,5 @@
+/* 
+
+a javascript file
+
+*/

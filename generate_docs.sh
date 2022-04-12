@@ -14,9 +14,10 @@
 # 2022-04-03   ah   v0.8   updated json config with page title
 # 2022-04-04   ah   v0.9   detect change in git; fix spaces in jason values
 # 2022-04-05   ah   v0.10  support of static dirs
+# 2022-04-12   ah   v0.11  add file injection into webroot and per project
 # ======================================================================
 
-GD_VERSION="0.10"
+GD_VERSION="0.11"
 
 GD_GITREPO="https://github.com/axelhahn/multidoc-generator"
 GD_SELFDIR=$( dirname "$0" )
@@ -76,6 +77,7 @@ function _getFromRepoJson(){
 }
 
 # get data from a repo with git clone or git pull
+# returns 0 if there was noch change
 function _gitUpdate(){
     local _url=$1
     local _dirgit=$2
@@ -255,11 +257,23 @@ function processRepos(){
                 _dirdoc="$GD_DIR_PUBLISH/$_prj"
 
                 echo "--- update git repo"
+                _bDoGenerate=0
                 if _gitUpdate "$_url" "$_dirgit"
                 then 
-                    echo NO CHANGE. Skipping Generation of docs with Daux.
+                    echo NO CHANGE in git data.
                 else
                     echo CHANGES DETECTED.
+                    _bDoGenerate=1
+                fi
+
+                if ! test -d "$_dirdoc"
+                then 
+                    echo Output dir does not exist yet.
+                    _bDoGenerate=1
+                fi
+
+                if test $_bDoGenerate -eq 1
+                then
                     echo
 
                     echo "--- generate docs"
@@ -267,6 +281,13 @@ function processRepos(){
                     daux generate -s "$GD_SELFDIR/tmp/$_prj/docs" -d "$_dirdoc";
                     _bSkipIndex=$?
                 fi
+                test -d "$GD_SELFDIR/config/add_2_projects/" && (
+                    echo "Syncing $GD_SELFDIR/config/add_2_projects/ to $_dirdoc"
+                    rsync -rav \
+                        --exclude "*.sample.*" \
+                        --exclude "*.dist" \
+                        "$GD_SELFDIR/config/add_2_projects/"* "$_dirdoc"
+                )
             fi
 
             if test "$_bSkipIndex" = "0"
@@ -287,6 +308,14 @@ function processRepos(){
     echo "=============== processing of projects finished. Generating overview..."
     echo
     generateIndex
+    test -d "$GD_SELFDIR/config/add_2_webroot/" && (
+        echo "Syncing $GD_SELFDIR/config/add_2_webroot/ to $GD_DIR_PUBLISH/"
+        rsync -rav \
+            --exclude "*.sample.*" \
+            --exclude "*.dist" \
+            "$GD_SELFDIR/config/add_2_webroot/"* "$GD_DIR_PUBLISH/"
+    )
+
     echo
 
 }
