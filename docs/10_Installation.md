@@ -11,6 +11,8 @@ Extract archive anywhere. The result is:
 ```text
 .
 ├── config/
+|  ├── add_2_projects/
+|  ├── add_2_webroot/
 │  ├── overview.template.boxes.dist
 │  ├── overview.template.datatable.dist
 │  └── repos.cfg.dist
