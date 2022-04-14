@@ -29,9 +29,10 @@ License: GNU GPL 3.0
 ## Features ##
 
 * customizable project list (JSON)
-* customizable output (2 templates are deliver)
+* customizable output: html, javascript, css (2 templates are delived)
 * supports groups of projects (by programming language or type)
 * project list can be filtered
+* add files for webroot or each doc folder of a project
 
 ## Screenshot ##
 
