@@ -1,5 +1,6 @@
 {
     "title": "Axels Multidoc Generator",
+    "descr": "Generate an overview html page of multiple documentations.",
     "author": "Axel Hahn",
     "ignore": {
         "files": ["30_PHP-client/Plugins/Checks/_skeleton.md"],
