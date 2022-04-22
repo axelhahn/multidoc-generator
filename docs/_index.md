@@ -34,6 +34,12 @@ License: GNU GPL 3.0
 * project list can be filtered
 * add files for webroot or each doc folder of a project
 
+## Demo
+
+Websites using the generator:
+
+* <https://os-docs.iml.unibe.ch/>
+
 ## Screenshot ##
 
 Generated index.html using the template with boxes (config/overview.template.boxes.dist):
