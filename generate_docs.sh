@@ -15,9 +15,10 @@
 # 2022-04-04   ah   v0.9   detect change in git; fix spaces in jason values
 # 2022-04-05   ah   v0.10  support of static dirs
 # 2022-04-12   ah   v0.11  add file injection into webroot and per project
+# 2022-08-07   ah   v0.12  fixed: select values with spaces
 # ======================================================================
 
-GD_VERSION="0.11"
+GD_VERSION="0.12"
 
 GD_GITREPO="https://github.com/axelhahn/multidoc-generator"
 GD_SELFDIR=$( dirname "$0" )
@@ -207,26 +208,27 @@ function processRepos(){
 
     local _bSkipIndex
 
-    mkdir "$GD_SELFDIR/public_html" 2>/dev/null
+    mkdir "$GD_DIR_PUBLISH" 2>/dev/null
 
     # ----- JSON PARSING
     jq ".sections[] .group" "$GD_JSONCONFIG" | while read _mygroup
     do
-        echo
-        echo "=============== adding GROUP = $_mygroup"
-        _group="${_mygroup//\"/}"
-        _groupinfo=$( jq '.sections[] | select(.group=='$_mygroup') .descr' "$GD_JSONCONFIG" )
-        addGroup "${_group}" "${_groupinfo//\"/}"
-        # | jq '.[] | select(.group=="first") .items'
+        
+        _group="${_mygroup//[\"]/}" # $_mygroup without surrounding quotes
 
         echo
+        echo "=============== adding GROUP = $_group"
+        _groupinfo=$( jq ".sections[] | select(.group==${_mygroup}) .descr" "$GD_JSONCONFIG" )
+        addGroup "${_group}" "${_groupinfo//\"/}"
+        # | jq '.[] | select(.group=="first") .items'
+        echo
         echo "looping over group items ..."
-        _iLength=$( jq '.sections[] | select(.group=='$_mygroup') .items|length' "$GD_JSONCONFIG" )
+        _iLength=$( jq ".sections[] | select(.group==${_mygroup}) .items|length" "$GD_JSONCONFIG" )
         for _iItem in $( seq $_iLength )
         do
             _bSkipIndex=0
             _iIdx=$_iItem-1
-            _item=$( jq '.sections[] | select(.group=='$_mygroup') .items['$_iIdx']' "$GD_JSONCONFIG" )
+            _item=$( jq ".sections[] | select(.group==${_mygroup}) .items[$_iIdx]" "$GD_JSONCONFIG" )
 
             # echo "DEBUG: item =  $_item"
 
@@ -235,6 +237,7 @@ function processRepos(){
             _author=$( echo "$_item" | jq ".author"  | tr -d '"')
 
             _prj=$(    echo "$_item" | jq ".subdir"  | tr -d '"')
+            _url=$(    echo "$_item" | jq ".url"     | tr -d '"')
 
             if [ "$_prj" != "null" ]; then
 
@@ -295,7 +298,7 @@ function processRepos(){
                 echo \> add2Index "$_group" "$_prj" "$_title" "$_url" "$_dirgit" "$_descr" "$_author"
                 add2Index "$_group" "$_prj" "$_title" "$_url" "$_dirgit" "$_descr" "$_author"
             else
-                echo "ERROR: do not add to index: $_dirdoc"
+                echo "ERROR: do not add to index: $_dirdoc - static subdir does not exist or daux generator failed."
                 rm -rf "$_dirdoc"
             fi
 
@@ -338,11 +341,16 @@ action=$1
 case $action in
     -h|--help|-?)
         echo "HELP:"
-        echo "NO PARAMS supported so far. All entries in $GD_JSONCONFIG will be processed."
+        # echo "NO PARAMS supported so far. All entries in $GD_JSONCONFIG will be processed."
+        echo "An optional given param will be used as target dir (default: $GD_DIR_PUBLISH)"
         echo
         exit 1
         ;;
 esac
+if [ -n "$1" ]; then
+    GD_DIR_PUBLISH=$1
+    GD_IDX=$GD_DIR_PUBLISH/index.html
+fi
 
 checkRequirements
 processRepos
