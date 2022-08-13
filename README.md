@@ -20,6 +20,7 @@ License: GNU GPL 3.0
 
 Websites using the generator:
 
+* <https://www.axel-hahn.de/docs/>
 * <https://os-docs.iml.unibe.ch/>
 
 ## Screenshot
