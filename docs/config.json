@@ -13,7 +13,8 @@
         "jump_buttons": true,
         "edit_on_github_": "iml-it/appmonitor/tree/master/docs",
         "links": {
-            "GitHub Repo": "https://github.com/axelhahn/multidoc-generator"
+            "GitHub Repo": "https://github.com/axelhahn/multidoc-generator",
+            "Axels Docs": "https://www.axel-hahn.de/docs/"
         },
         "theme": "daux-blue",
         "theme_": "axel",
