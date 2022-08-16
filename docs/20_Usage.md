@@ -1,7 +1,16 @@
 # Start generator #
 
 Run `./generate_docs.sh` to clone/ pull the configured repositories
-and generate static html pages with daux.
+and generate static html pages with daux. Those must have a docs
+subdirectory what can be generated to static files
+with Daux <https://daux.io/>
+
+It starts `daux generate` and creates static html files
+below `./public_html/[project]` 
+
+Additionally a `./public_html/index.html` will be generated to have an overvew page of all documentations.
+
+All files below `./public_html/` you can read offline or it can be copied to a webserver (it is not needed that it is in the webroot).
 
 # Git repositories #
 

@@ -1,3 +1,10 @@
+# Requirements #
+
+* PHP 7.4 or 8 (as CLI) and Composer <https://getcomposer.org/>
+* Daux - generator to create static html pages from markdown. See <https://daux.io/>
+* jq - JSON processor <https://stedolan.github.io/jq/>
+* Each handled git project must have a subfolder `./docs/` that is compatible with Daux generator
+
 # Install Daux #
 
 Go to <https://daux.io/> and follow the instructions for installation of daux, i.e. with composer.

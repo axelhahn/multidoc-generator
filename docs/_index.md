@@ -1,30 +1,19 @@
 # Multi Doc Generator #
 
-## Description ##
+## Description
 
-A bash script to generate a collection of docs
-from a list of repositories. Those must have a docs
-subdirectory what can be generated to static files
-with Daux <https://daux.io/>
+A bash script to generate a collection of static docs
+from a list of repositories (using Daux <https://daux.io/>) or existing folders.
 
-The script make a git clone/ pull to fetch each project.
-It starts `daux generate` and creates static html files
-below `./public_html/[project]` 
+You can configure
 
-Additionally a `./public_html/index.html` will be generated to have an overvew page of all documentations.
+* the groups and repositories
+* the output html, css, javascript
 
-All files below `./public_html/` you can read offline or it can be copied to a webserver (it is not needed that it is in the webroot).
-
-Source: https://github.com/axelhahn/multidoc-generator
-
-License: GNU GPL 3.0
-
-## Requirements ##
-
-* PHP 7.4 or 8 (CLI) and Composer <https://getcomposer.org/>
-* Daux - generator to create static html pages from markdown. See <https://daux.io/>
-* jq - JSON processor <https://stedolan.github.io/jq/>
-* Each handled project must have a subfolder docs that is compatible with Daux generator
+👤 Author: Axel Hahn\
+📄 Source: <https://github.com/axelhahn/multidoc-generator>\
+📜 License: GNU GPL 3.0\
+📗 Docs: see [www.axel-hahn.de/docs](https://www.axel-hahn.de/docs/multidoc-generator/)
 
 ## Features ##
 
@@ -38,6 +27,7 @@ License: GNU GPL 3.0
 
 Websites using the generator:
 
+* <https://www.axel-hahn.de/docs/>
 * <https://os-docs.iml.unibe.ch/>
 
 ## Screenshot ##

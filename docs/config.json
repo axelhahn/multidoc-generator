@@ -1,6 +1,6 @@
 {
     "title": "Axels Multidoc Generator",
-    "tagline": "Generate an overview html page of multiple documentations.",
+    "tagline": "Generate an overview html page of multiple documentations that use Daux.",
     "author": "Axel Hahn",
     "ignore": {
         "files": ["30_PHP-client/Plugins/Checks/_skeleton.md"],

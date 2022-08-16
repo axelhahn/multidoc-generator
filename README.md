@@ -2,19 +2,18 @@
 
 ## Description
 
-A bash script to generate a collection of docs
-from a list of repositories. Those must have a docs
-subdirectory what can be generated to static files
-with Daux <https://daux.io/>
+A bash script to generate a collection of static docs
+from a list of repositories (using Daux <https://daux.io/>) or existing folders.
 
 You can configure
 
 * the groups and repositories
 * the output html, css, javascript
 
-License: GNU GPL 3.0
-
-[More Details: docs](docs/)
+👤 Author: Axel Hahn\
+📄 Source: <https://github.com/axelhahn/multidoc-generator>\
+📜 License: GNU GPL 3.0\
+📗 Docs: see [www.axel-hahn.de/docs](https://www.axel-hahn.de/docs/multidoc-generator/)
 
 ## Demo
 
