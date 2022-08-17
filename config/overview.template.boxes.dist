@@ -5,15 +5,16 @@
 # >>> boxes
 #
 # --------------------------------------------------------------------------------
-# 2022-01-19  v0.1  ahahn  init
-# 2022-01-20  v0.2  ahahn  added groups and filter
-# 2022-01-21  v0.3  ahahn  update filter box: counter of visible items
-# 2022-04-01  v0.4  ahahn  add onclick attribute on a box
-# 2022-04-01  v0.5  ahahn  css update; add intro text
-# 2022-04-03  v0.6  ahahn  add section; add title from json
-# 2022-04-05  v0.7  ahahn  darker box header
-# 2022-04-14  v0.8  ahahn  different main colors for sections
-# 2022-08-13  v0.9  ahahn  add a href link to docpages for spiders
+# 2022-01-19  v0.1   ahahn  init
+# 2022-01-20  v0.2   ahahn  added groups and filter
+# 2022-01-21  v0.3   ahahn  update filter box: counter of visible items
+# 2022-04-01  v0.4   ahahn  add onclick attribute on a box
+# 2022-04-01  v0.5   ahahn  css update; add intro text
+# 2022-04-03  v0.6   ahahn  add section; add title from json
+# 2022-04-05  v0.7   ahahn  darker box header
+# 2022-04-14  v0.8   ahahn  different main colors for sections
+# 2022-08-13  v0.9   ahahn  add a href link to docpages for spiders
+# 2022-08-17  v0.10  ahahn  dimmed sections if folter has no match
 # ================================================================================
 
 
@@ -52,10 +53,10 @@ html_page="<!doctype html>
             h2{margin: 0; color:var(--colorSectionA); }
             h2>span{font-size: 160%}
             div#filterbox{text-align: center; background: #fff; top: 0; right: 0; padding: 0.5em; position: fixed; border-bottom-left-radius: 1em; z-index: 100;}
-            div#filterbox input{font-size: 130%; border-radius: 1em; border: 1px solid #ddd; color: var(--colorInput); padding: 0.1em 0.6em;}
+            div#filterbox input{font-size: 130%; border-radius: 1em; border: 1px solid #ddd; color: var(--colorInput); padding: 0.1em 0.6em; margin-bottom: 0.5em;}
             div#filterbox input:focus{border: 1px solid #abc !important;}
             div.box{float: left; width: 23%; min-width: 20em; border: 2px solid rgba(0,0,0,0.1); border-radius: 0.5em; margin: 0 1% 2em 0; background:var(--bgBox); height: 13em; box-shadow: none; opacity: 1; transition: all 0.3s}
-            div.hidden{height:0; width: 0; display: none;}
+            div.hiddenboxclass{height:0; width: 0; display: none;}
             div.box:hover{box-shadow: 0 0 2em #ccc;border-color: rgba(0,0,0,0.15); cursor:pointer; opacity: 1;}
             div.boxheader{background: var(--colorSectionA); padding: 0.5em 1em; border-radius: 0.3em 0.3em 0 0 ; transition: all 1s}
             div.boxheader>span{font-size: 130%}
@@ -83,9 +84,26 @@ html_page="<!doctype html>
             
         </style>
         <script>
+            var idMenu='divMenu';
             var idInput='eFilter';
             var idCount='idCount';
-            var sClassHidden='hidden';
+            var sClassHiddenSection='hidden';
+            var sClassHidden='hiddenboxclass';
+
+            function generateMenu(){
+                return true;
+                /*
+                var sHtml='';
+                var obj = document.getElementsByTagName('h2');
+                for (var i=0; i<obj.length; i++){
+                    var sH2Id='h2-'+i;
+                    sHtml+='<a href=#+sH2Id+>'+obj[i].innerText+'</a><br>';
+                    obj[i].id=sH2Id;
+                }
+                document.getElementById(idMenu).innerHTML='<nav>'+sHtml+'</nav>';
+                return true;
+                */
+            }
             function filter(){
 
                 // ---------- show / hide boxes based on search text
@@ -95,12 +113,11 @@ html_page="<!doctype html>
                 var regex = RegExp(sText, 'i');
 
                 for (i = 0; i < obj.length; i++) {
-                    obj[i].className=obj[i].className.replace(' '+sClassHidden, '');
+                    obj[i].className=obj[i].className.replace(sClassHidden, '');
                     if ( sText && !regex.test(obj[i].innerText) ){
                         obj[i].className+=' '+sClassHidden;
                     }
-                    iVisible+=obj[i].style.display=='block' ? 1 : 0;
-                    iVisible+=obj[i].style.display=='block' ? 1 : 0;
+                    obj[i].className=obj[i].className.replace('  ', ' ');
                 }
 
                 // ---------- show message based on visible boxes
@@ -108,28 +125,29 @@ html_page="<!doctype html>
                 var iCount=obj.length;
 
                 var objHidden = document.getElementsByClassName(sClassHidden);
+                // console.log(objHidden);
                 var iVisible=iCount-objHidden.length;
 
                 if(iVisible==iCount){ sVisText=iCount+' (all)'; }
                 if(iVisible<iCount){ sVisText=iVisible+'/ '+iCount; }
-                if(iVisible==0){ sVisText='(none)'; }
+                if(iVisible<1){ sVisText='(none)'; }
                 document.getElementById(idCount).innerText='Visible: '+sVisText;
 
                 // ---------- show message based on visible boxes
                 var sections=document.querySelectorAll('section');
                 for(var i=0; i < sections.length; i++){
-                    sections[i].className=sections[i].className.replace(' '+sClassHidden, '');
+                    sections[i].className=sections[i].className.replace(' '+sClassHiddenSection, '');
                     var sectionBoxes = sections[i].getElementsByClassName('box');
                     var hiddenBoxes = sections[i].getElementsByClassName(sClassHidden);
-                    console.log('section #'+i + ' -- ' + sectionBoxes.length + ', ' + hiddenBoxes.length);
+                    // console.log('section #'+i + ' -- ' + sectionBoxes.length + ', ' + hiddenBoxes.length);
                     if(sectionBoxes.length && sectionBoxes.length-hiddenBoxes.length==0){
-                        sections[i].className+=' '+sClassHidden;
+                        sections[i].className+=' '+sClassHiddenSection;
                     }
 
                 }
 
             }
-            window.setTimeout('filter()', 20);
+            window.setTimeout('generateMenu();filter()', 20);
         </script>
     </head>
     <body>
