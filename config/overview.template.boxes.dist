@@ -14,7 +14,7 @@
 # 2022-04-05  v0.7   ahahn  darker box header
 # 2022-04-14  v0.8   ahahn  different main colors for sections
 # 2022-08-13  v0.9   ahahn  add a href link to docpages for spiders
-# 2022-08-17  v0.10  ahahn  dimmed sections if folter has no match
+# 2022-08-17  v0.10  ahahn  dimmed sections if folder has no match
 # 2022-08-18  v0.11  ahahn  add menu to jump to existing sections
 # ================================================================================
 

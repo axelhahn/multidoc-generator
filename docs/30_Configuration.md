@@ -2,31 +2,39 @@
 
 Edit the file `./config/repos.json`.
 
-On top level is page information:
+On top level is a genral index page information:
 
-* title - main page title
-* descr - some intro text
-* sections - a key for an array of groups
+* title - {string} main page title
+* descr - {string} some intro text
+* inject - {hash} html codes you can inject to the index page or all documentation files in head or body
+* sections - {hash} a key for an array of groups
 
-A group contains
+**inject** contains
 
-* group - the name of a group
-* descr - some intro text
-* items - akey for an array of projects/ docs
+* idx_body - {string} html code at the end of the body of index page
+* idx_head - {string} html code at the end of the html head of index page
+* doc_body - {string} html code at the end of the body of each documentation page
+* doc_head - {string} html code at the end of the html head of each documentation page
 
-A group item contains
+**sections** contains
 
-* repo - url to a git repo; it will be cloned in ./tmp/ and Daux will be used to generate its docs below public_html/[NAME]
+* group - {string} the name of a group
+* descr - {string} some intro text
+* items - {hash} a key for an array of projects/ docs
+
+A sections->[number]->**items** item contains
+
+* repo - {string} url to a git repo; it will be cloned in ./tmp/ and Daux will be used to generate its docs below public_html/[NAME]
 
 OR
 
-* subdir - static, already existing subdir in public_html to be added in index too
+* subdir - {string} static, already existing subdir in public_html to be added in index too
 
-There are defaults that will be overrided by ./tmp/[NAME]/docs/config.json. 
+Next to repo|subdir there are default values that will be overrided by ./tmp/[PROJECT]/docs/config.json. 
 
-* title - title of a project
-* descr - description of a project
-* author - author
+* title - {string} title of a project
+* descr - {string} description of a project
+* author - {string} author
 
 # Example #
 
@@ -37,6 +45,14 @@ Example with 2 groups and some entries. The 2nd group "PHP" has one project usin
 {
     "title": "Axels Open source docs",
     "descr": "Docs of my tools...",
+    
+    "inject": {
+        "idx_body": "<!-- script type=\"text/javascript\" src=\"functions.js\" defer=\"defer\"></script -->",
+        "idx_head": "<!-- no inject idx_head -->",
+        "doc_body": "<!-- script type=\"text/javascript\" src=\"/docs/functions.js\" defer=\"defer\"></script -->",
+        "doc_head": "<!-- no inject doc_head -->"
+    },
+
     "sections":
     [
         {

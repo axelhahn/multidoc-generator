@@ -1,6 +1,14 @@
 {
     "title": "Axels Open source docs",
     "descr": "Docs of my tools...",
+
+    "inject": {
+        "idx_body": "<!-- script type=\"text/javascript\" src=\"functions.js\" defer=\"defer\"></script -->",
+        "idx_head": "<!-- no inject idx_head -->",
+        "doc_body": "<!-- script type=\"text/javascript\" src=\"/docs/functions.js\" defer=\"defer\"></script -->",
+        "doc_head": "<!-- no inject doc_head -->"
+    },
+
     "sections":
     [
         {
@@ -9,7 +17,7 @@
             "items":
                 [
                     {
-                        "subdir": "manuell_1",
+                        "subdir": "manual_1",
                         "title": "Static dir 1",
                         "descr": "A Non-Daux-Doc",
                         "author": "John Doe"

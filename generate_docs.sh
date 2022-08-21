@@ -16,9 +16,10 @@
 # 2022-04-05   ah   v0.10  support of static dirs
 # 2022-04-12   ah   v0.11  add file injection into webroot and per project
 # 2022-08-07   ah   v0.12  fixed: select values with spaces
+# 2022-08-21   ah   v0.13  add injection code before </head> and </body>
 # ======================================================================
 
-GD_VERSION="0.12"
+GD_VERSION="0.13"
 
 GD_GITREPO="https://github.com/axelhahn/multidoc-generator"
 GD_SELFDIR=$( dirname "$0" )
@@ -164,6 +165,57 @@ function add2Index(){
     echo "${html_element}" >> "$GD_IDXDATA"
 }
 
+# ----------------------------------------------------------------------
+
+# add string from add2body before </body> in a file
+# param  string  filename to update
+# param  string  html code to inject
+# param  string  before what string; one of </head>|</body>
+function add2Page(){
+    local _file=$1
+    local _what="$2"
+    local _before=$3
+
+    if [ -n "${_what}" ]; then
+        echo "DEBUG: add ${_what}"
+        echo "DEBUG: to file $_file"
+        echo "DEBUG: before $_before"
+        sed -i "s#${_before}#${_what}\n${_before}#" "$_file"
+    fi
+}
+
+# inject code into index page
+# param  string  filename
+function add2IdxPage(){
+    if [ -z "${__page_add_idx_head__}" ]; then
+        __page_add_idx_head__=$( jq '.inject.idx_head' "$GD_JSONCONFIG" | sed 's#^\"##' | sed 's#\"$##' )
+    fi
+    if [ -z "${__page_add_idx_body__}" ]; then
+        __page_add_idx_body__=$( jq '.inject.idx_body' "$GD_JSONCONFIG" | sed 's#^\"##' | sed 's#\"$##' )
+    fi
+
+    add2Page "$1" "$__page_add_idx_head__" "</head>"
+    add2Page "$1" "$__page_add_idx_body__" "</body>"
+
+}
+
+# inject code into documentation page
+# param  string  filename
+function add2DocPage(){
+    if [ -z "${__page_add_doc_head__}" ]; then
+        __page_add_doc_head__=$( jq '.inject.doc_head' "$GD_JSONCONFIG" | sed 's#^\"##' | sed 's#\"$##' )
+    fi
+    if [ -z "${__page_add_doc_body__}" ]; then
+        __page_add_doc_body__=$( jq '.inject.doc_body' "$GD_JSONCONFIG" | sed 's#^\"##' | sed 's#\"$##' )
+    fi
+
+    add2Page "$1" "$__page_add_doc_head__" "</head>"
+    add2Page "$1" "$__page_add_doc_body__" "</body>"
+
+}
+
+# ----------------------------------------------------------------------
+
 # generate index.html with overview of all doc pages
 # It reads the ./config/overview.template
 function generateIndex(){
@@ -182,6 +234,7 @@ function generateIndex(){
 
     . "${GD_OVERVIEW_TEMPLATE}"
     echo "${html_page}" >"$GD_IDX"
+    add2IdxPage "$GD_IDX"
 
     ls -l "$GD_IDX"
     rm -f "$GD_IDXDATA"
@@ -282,6 +335,10 @@ function processRepos(){
                     echo "--- generate docs"
                     rm -rf "$_dirdoc" 2>/dev/null
                     daux generate -s "$GD_SELFDIR/tmp/$_prj/docs" -d "$_dirdoc";
+                    for myfile in $( find "$_dirdoc" -name "*.html" )
+                    do
+                        add2DocPage "$myfile"
+                    done
                     _bSkipIndex=$?
                 fi
                 test -d "$GD_SELFDIR/config/add_2_projects/" && (
@@ -333,7 +390,7 @@ echo "
 |                                                                                |
 |           --==##  Axels MULTI DOC GENERATOR using DAUX  ##==--                 |
 |                                                                                |
-+--------------------------------------------------------------------------------+
++---------------------------------------------------------------------- v$GD_VERSION ---+
 
 "
 

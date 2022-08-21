@@ -13,7 +13,15 @@ Add the path of the bin directory, i.e. `~/.config/composer/vendor/daux/daux.io/
 
 # Install generator #
 
-Extract archive anywhere. The result is:
+Extract archive anywhere. 
+
+OR
+
+```shell
+git clone https://github.com/axelhahn/multidoc-generator.git
+```
+
+The result in the created subdir is:
 
 ```text
 .
@@ -25,9 +33,7 @@ Extract archive anywhere. The result is:
 │  └── repos.cfg.dist
 ├── docs/
 ├── generate_docs.sh
-├── LICENSE
-├── public_html/
-└── tmp/
+└── LICENSE
 ```
 
 # Initialize config #
