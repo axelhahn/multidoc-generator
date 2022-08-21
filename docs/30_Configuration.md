@@ -1,6 +1,8 @@
-# Config file #
+# Config file
 
-Edit the file `./config/repos.json`.
+The main config file is `./config/repos.json`.
+
+## top level
 
 On top level is a genral index page information:
 
@@ -9,18 +11,26 @@ On top level is a genral index page information:
 * inject - {hash} html codes you can inject to the index page or all documentation files in head or body
 * sections - {hash} a key for an array of groups
 
-**inject** contains
+## 2nd level - inject
+
+**inject** can contain the subkeys:
 
 * idx_body - {string} html code at the end of the body of index page
 * idx_head - {string} html code at the end of the html head of index page
 * doc_body - {string} html code at the end of the body of each documentation page
 * doc_head - {string} html code at the end of the html head of each documentation page
 
+In those keys you can add functionality that are independent from a template, eg. website tracking with Matomo.
+
+## 2nd level - sections
+
 **sections** contains
 
 * group - {string} the name of a group
 * descr - {string} some intro text
 * items - {hash} a key for an array of projects/ docs
+
+## 3rd level - sections -> # -> items
 
 A sections->[number]->**items** item contains
 
@@ -30,16 +40,18 @@ OR
 
 * subdir - {string} static, already existing subdir in public_html to be added in index too
 
+Remark:
+If a "repo" url or a given "subdir" does not exist then won't appear in the index page.
+
 Next to repo|subdir there are default values that will be overrided by ./tmp/[PROJECT]/docs/config.json. 
 
 * title - {string} title of a project
 * descr - {string} description of a project
 * author - {string} author
 
-# Example #
+# Example repo.json
 
 Example with 2 groups and some entries. The 2nd group "PHP" has one project using overrides.
-
 
 ```json
 {
