@@ -33,7 +33,7 @@ In those keys you can add functionality that are independent from a template, eg
 ## 3rd level - sections -> # -> items
 
 An object in sections->[number]->**items** describes a single documentation of a product or process.
-You need one of the kess:
+You need one of the keys:
 
 * repo - {string} url to a git repo with https:// protocol; it will be cloned in ./tmp/ and Daux will be used to generate its docs below public_html/[NAME]
 
