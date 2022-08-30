@@ -17,9 +17,10 @@
 # 2022-04-12   ah   v0.11  add file injection into webroot and per project
 # 2022-08-07   ah   v0.12  fixed: select values with spaces
 # 2022-08-21   ah   v0.13  add injection code before </head> and </body>
+# 2022-08-31   ah   v0.14  fix injection function add2page
 # ======================================================================
 
-GD_VERSION="0.13"
+GD_VERSION="0.14"
 
 GD_GITREPO="https://github.com/axelhahn/multidoc-generator"
 GD_SELFDIR=$( dirname "$0" )
@@ -176,7 +177,7 @@ function add2Page(){
     local _what="$2"
     local _before=$3
 
-    if [ -n "${_what}" ]; then
+    if [ -n "${_what}" ] && [ "${_what}" != "null" ]; then
         echo "DEBUG: add ${_what}"
         echo "DEBUG: to file $_file"
         echo "DEBUG: before $_before"
