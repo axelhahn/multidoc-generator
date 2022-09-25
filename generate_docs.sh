@@ -18,9 +18,10 @@
 # 2022-08-07   ah   v0.12  fixed: select values with spaces
 # 2022-08-21   ah   v0.13  add injection code before </head> and </body>
 # 2022-08-31   ah   v0.14  fix injection function add2page
+# 2022-09-25   ah   v0.15  fix mix of static and daux generated helppdages
 # ======================================================================
 
-GD_VERSION="0.14"
+GD_VERSION="0.15"
 
 GD_GITREPO="https://github.com/axelhahn/multidoc-generator"
 GD_SELFDIR=$( dirname "$0" )
@@ -298,6 +299,7 @@ function processRepos(){
                 echo
                 echo "---------- static dir: $_prj"
                 echo
+                _dirgit=
                 _dirdoc="$GD_DIR_PUBLISH/$_prj"
                 test -d "$_dirdoc" || _bSkipIndex=1
 
@@ -353,7 +355,7 @@ function processRepos(){
 
             if test "$_bSkipIndex" = "0"
             then
-                echo \> add2Index "$_group" "$_prj" "$_title" "$_url" "$_dirgit" "$_descr" "$_author"
+                echo \> add2Index ["$_group"] ["$_prj"] ["$_title"] ["$_url"] ["$_dirgit"] ["$_descr"] ["$_author"]
                 add2Index "$_group" "$_prj" "$_title" "$_url" "$_dirgit" "$_descr" "$_author"
             else
                 echo "ERROR: do not add to index: $_dirdoc - static subdir does not exist or daux generator failed."
