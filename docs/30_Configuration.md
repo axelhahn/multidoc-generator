@@ -36,6 +36,7 @@ An object in sections->[number]->**items** describes a single documentation of a
 You need one of the keys:
 
 * repo - {string} url to a git repo with https:// protocol; it will be cloned in ./tmp/ and Daux will be used to generate its docs below public_html/[NAME]
+* docurl - {śtring} optional: absolute url to an external doc page
 
 OR
 
