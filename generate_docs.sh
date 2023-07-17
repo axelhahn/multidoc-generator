@@ -19,9 +19,10 @@
 # 2022-08-21   ah   v0.13  add injection code before </head> and </body>
 # 2022-08-31   ah   v0.14  fix injection function add2page
 # 2022-09-25   ah   v0.15  fix mix of static and daux generated helppdages
+# 2023-07-17   ah   v0.16  add links to external docs
 # ======================================================================
 
-GD_VERSION="0.15"
+GD_VERSION="0.16"
 
 GD_GITREPO="https://github.com/axelhahn/multidoc-generator"
 GD_SELFDIR=$( dirname "$0" )
@@ -272,7 +273,7 @@ function processRepos(){
         _group="${_mygroup//[\"]/}" # $_mygroup without surrounding quotes
 
         echo
-        echo "=============== adding GROUP = $_group"
+        echo -e "\e[1;35m=============== adding GROUP = $_group \e[0m"
         _groupinfo=$( jq ".sections[] | select(.group==${_mygroup}) .descr" "$GD_JSONCONFIG" )
         addGroup "${_group}" "${_groupinfo//\"/}"
         # | jq '.[] | select(.group=="first") .items'
@@ -285,7 +286,7 @@ function processRepos(){
             _iIdx=$_iItem-1
             _item=$( jq ".sections[] | select(.group==${_mygroup}) .items[$_iIdx]" "$GD_JSONCONFIG" )
 
-            # echo "DEBUG: item =  $_item"
+            echo "DEBUG: item =  $_item"
 
             _title=$(  echo "$_item" | jq ".title"   | tr -d '"')
             _descr=$(  echo "$_item" | jq ".descr"   | tr -d '"')
@@ -293,11 +294,12 @@ function processRepos(){
 
             _prj=$(    echo "$_item" | jq ".subdir"  | tr -d '"')
             _url=$(    echo "$_item" | jq ".url"     | tr -d '"')
+            _docurl=$( echo "$_item" | jq ".docurl"  | tr -d '"' | sed "s#^null\$##")
 
             if [ "$_prj" != "null" ]; then
 
                 echo
-                echo "---------- static dir: $_prj"
+                echo -e "\e[1;32m---------- static dir: $_prj \e[0m"
                 echo
                 _dirgit=
                 _dirdoc="$GD_DIR_PUBLISH/$_prj"
@@ -309,7 +311,7 @@ function processRepos(){
                 _prj=$( echo "$_url" | rev | cut -f 1 -d '/' | rev | sed "s#.git##" )
 
                 echo
-                echo "---------- git repo: $_prj - $_url"
+                echo -e "\e[1;32m---------- git repo: $_prj - $_url \e[0m"
                 echo
 
                 _dirgit="$GD_SELFDIR/tmp/$_prj"
@@ -321,14 +323,21 @@ function processRepos(){
                 then 
                     echo NO CHANGE in git data.
                 else
-                    echo CHANGES DETECTED.
+                    echo "CHANGES DETECTED. Generate = yes"
                     _bDoGenerate=1
                 fi
 
                 if ! test -d "$_dirdoc"
                 then 
-                    echo Output dir does not exist yet.
+                    echo "Output dir does not exist yet. Generate = yes"
                     _bDoGenerate=1
+                fi
+
+                if test -n "$_docurl"
+                then
+                    echo "INFO: external doc url was found: $_docurl - Generate = NO"
+                    _bDoGenerate=0
+                    _bSkipIndex=0
                 fi
 
                 if test $_bDoGenerate -eq 1
@@ -344,19 +353,29 @@ function processRepos(){
                     done
                     _bSkipIndex=$?
                 fi
-                test -d "$GD_SELFDIR/config/add_2_projects/" && (
-                    echo "Syncing $GD_SELFDIR/config/add_2_projects/ to $_dirdoc"
-                    rsync -rav \
-                        --exclude "*.sample.*" \
-                        --exclude "*.dist" \
-                        "$GD_SELFDIR/config/add_2_projects/"* "$_dirdoc"
-                )
+
+                if test -z "$_docurl"
+                then
+                    test -d "$GD_SELFDIR/config/add_2_projects/" && (
+                        echo "Syncing $GD_SELFDIR/config/add_2_projects/ to $_dirdoc"
+                        rsync -rav \
+                            --exclude "*.sample.*" \
+                            --exclude "*.dist" \
+                            "$GD_SELFDIR/config/add_2_projects/"* "$_dirdoc"
+                    )
+                fi
             fi
 
             if test "$_bSkipIndex" = "0"
             then
-                echo \> add2Index ["$_group"] ["$_prj"] ["$_title"] ["$_url"] ["$_dirgit"] ["$_descr"] ["$_author"]
-                add2Index "$_group" "$_prj" "$_title" "$_url" "$_dirgit" "$_descr" "$_author"
+                if test -n "$_docurl"
+                then
+                    echo \> add2Index ["$_group"] ["$_docurl"] ["$_title"] ["$_url"] ["$_dirgit"] ["$_descr"] ["$_author"]
+                    add2Index "$_group" "$_docurl" "$_title" "$_url" "$_dirgit" "$_descr" "$_author"
+                else
+                    echo \> add2Index ["$_group"] ["$_prj"] ["$_title"] ["$_url"] ["$_dirgit"] ["$_descr"] ["$_author"]
+                    add2Index "$_group" "$_prj" "$_title" "$_url" "$_dirgit" "$_descr" "$_author"
+                fi
             else
                 echo "ERROR: do not add to index: $_dirdoc - static subdir does not exist or daux generator failed."
                 rm -rf "$_dirdoc"
@@ -368,7 +387,7 @@ function processRepos(){
         
     done
     echo
-    echo "=============== processing of projects finished. Generating overview..."
+    echo -e "\e[1;35m=============== processing of projects finished. Generating overview... \e[0m"
     echo
     generateIndex
     test -d "$GD_SELFDIR/config/add_2_webroot/" && (
