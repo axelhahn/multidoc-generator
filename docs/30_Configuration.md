@@ -9,6 +9,7 @@ On top level is a genral index page information:
 * title - {string} main page title
 * descr - {string} some intro text
 * inject - {hash} html codes you can inject to the index page or all documentation files in head or body
+* replacements - {hash} define replacements
 * sections - {hash} a key for an array of groups
 
 ## 2nd level - inject
@@ -21,6 +22,77 @@ On top level is a genral index page information:
 * doc_head - {string} html code at the end of the html head of each documentation page
 
 In those keys you can add functionality that are independent from a template, eg. website tracking with Matomo.
+
+## 2nd level - replacements
+
+**replacements** is an array of replacements.
+You can define es many replacements you want.
+
+### replace all between 2 markers
+
+Each array value can contain the subkeys:
+
+* from - {string} identifier for start
+* to - {string} identifier for end
+* content - {array} array items are single lines to insert between the markers
+
+**Limitation**: 
+
+Only the first occurance will be replaced.
+
+**Example**: 
+
+In your markdown you should use html comments (which are invisible in html output) and set a specific starting and ending marker.
+
+```txt
+...
+<!-- START-EXAMPLE-MARKER -->
+  whatever here is ... it will be removed by the content value
+<!-- END-EXAMPLE-MARKER -->
+...
+```
+
+For the replacement set in the repos.json:
+
+```json
+    ...
+    "replacements": [
+        {
+            "from": "<!-- START-EXAMPLE-MARKER -->", 
+            "to": "<!-- END-EXAMPLE-MARKER -->",
+            "content": [
+                "Here is line 1 to insert between the markers.",
+                "Here is line 2 to insert between the markers."
+            ]
+        },
+        ...
+    ],
+    ...
+```
+
+### string search and replace
+
+* search - {string} search string
+* content - {string} replacement
+
+All occurances of the search string will be replaced.
+
+For the replacement set in the repos.json:
+
+```json
+    ...
+    "replacements": [
+        {
+            "search": "[PLACEHOLDER_1]",
+            "content": "I am the real value. "
+        },
+        {
+            "search": "[PLACEHOLDER_2]",
+            "content": "I am something else. "
+        }
+    ],
+    ...
+```
 
 ## 2nd level - sections
 
@@ -66,6 +138,25 @@ Example with 2 groups and some entries. The 2nd group "PHP" has one project usin
         "doc_body": "<!-- script type=\"text/javascript\" src=\"/docs/functions.js\" defer=\"defer\"></script -->",
         "doc_head": "<!-- no inject doc_head -->"
     },
+
+    "replacements": [
+        {
+            "from": "<!-- START-ADD-TTY-PLAYER -->", 
+            "to": "<!-- END-ADD-TTY-PLAYER -->",
+            "content": [
+                "<html>",
+                "  <script src=/docs/addons/ttyrec/webcomponents-lite.min.js></script>",
+                "  <link rel=stylesheet href=/docs/addons/ttyrec/tty-player.css>",
+                "  <script src=/docs/addons/ttyrec/term.min.js></script>",
+                "  <script src=/docs/addons/ttyrec/tty-player.min.js></script>",
+                "</html>"
+            ]
+        },
+        {
+            "search": "[SOMETHING]",
+            "content": "I am the replacement. "
+        }
+    ],
 
     "sections":
     [
