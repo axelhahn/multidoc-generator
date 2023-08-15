@@ -20,9 +20,10 @@
 # 2022-08-31   ah   v0.14  fix injection function add2page
 # 2022-09-25   ah   v0.15  fix mix of static and daux generated helppdages
 # 2023-07-17   ah   v0.16  add links to external docs
+# 2023-08-15   ah   v0.17  add replacements
 # ======================================================================
 
-GD_VERSION="0.16"
+GD_VERSION="0.17"
 
 GD_GITREPO="https://github.com/axelhahn/multidoc-generator"
 GD_SELFDIR=$( dirname "$0" )
@@ -181,8 +182,8 @@ function add2Page(){
 
     if [ -n "${_what}" ] && [ "${_what}" != "null" ]; then
         echo "DEBUG: add ${_what}"
-        echo "DEBUG: to file $_file"
-        echo "DEBUG: before $_before"
+        # echo "DEBUG: to file $_file"
+        # echo "DEBUG: before $_before"
         sed -i "s#${_before}#${_what}\n${_before}#" "$_file"
     fi
 }
@@ -205,6 +206,7 @@ function add2IdxPage(){
 # inject code into documentation page
 # param  string  filename
 function add2DocPage(){
+    local _file=$1
     if [ -z "${__page_add_doc_head__}" ]; then
         __page_add_doc_head__=$( jq '.inject.doc_head' "$GD_JSONCONFIG" | sed 's#^\"##' | sed 's#\"$##' )
     fi
@@ -212,9 +214,60 @@ function add2DocPage(){
         __page_add_doc_body__=$( jq '.inject.doc_body' "$GD_JSONCONFIG" | sed 's#^\"##' | sed 's#\"$##' )
     fi
 
-    add2Page "$1" "$__page_add_doc_head__" "</head>"
-    add2Page "$1" "$__page_add_doc_body__" "</body>"
+    echo "FILE: $_file"
+    add2Page "$_file" "$__page_add_doc_head__" "</head>"
+    add2Page "$_file" "$__page_add_doc_body__" "</body>"
 
+    # echo "Make replacements in $1"
+    addReplacements "$1"
+}
+
+# replace lines from section "replacements" in the generated html files
+# param  string  file to uptate
+function addReplacements(){
+    local _file=$1
+    local _section
+
+    jq -c '.replacements[]' "$GD_JSONCONFIG" | while read -r _section; do
+
+        # set content into from .. to section
+        _from=$( jq ".from" <<< "$_section" | sed 's#^"##' | sed 's#"$##' )
+        if [ -n "$_from" ] && grep "$_from" "$_file" >/dev/null; then
+            declare -i iStart=0
+            declare -i iEnd=0
+
+            _to=$( jq ".to" <<< "$_section" | sed 's#^"##' | sed 's#"$##' )
+            _content=$( jq -r ".content | @tsv" <<< "$_section" | tr '\t' '\n' )
+
+            echo "    ... between $_from ... and $_to:"
+            echo "$_content"
+
+            iStart=$( grep -n "$_from" "$_file" | cut -f 1 -d ':' | head -1 )
+            iEnd=$(   grep -n "$_to"   "$_file" | cut -f 1 -d ':' | head -1 )
+
+            if [ $iEnd -gt $iStart ]; then
+                (
+                    cat "$_file" | sed -n "1,${iStart}p"
+                    echo "$_content" 
+                    cat "$_file" | sed -n "$iEnd,\$p"
+                ) > "$_file.tmp" && mv "$_file.tmp" "$_file"
+            else
+                echo "WARNING: end marker was not found."
+            fi
+            
+        # else
+        #     echo "SKIP - keyword $_from was not found"
+        fi
+
+        # search and replace of strings
+        _search=$( jq ".search" <<< "$_section" | sed 's#^"##' | sed 's#"$##' )
+        if [ -n "$_search" ] && grep "$_search" "$_file" >/dev/null; then
+            _content=$( jq -r ".content" <<< "$_section" )
+            echo "    Replace '$_search' -> '$_content'"
+            sed -i "s#${_search}#${_content}#g" "$_file"
+        fi
+
+    done
 }
 
 # ----------------------------------------------------------------------
@@ -347,6 +400,7 @@ function processRepos(){
                     echo "--- generate docs"
                     rm -rf "$_dirdoc" 2>/dev/null
                     daux generate -s "$GD_SELFDIR/tmp/$_prj/docs" -d "$_dirdoc";
+                    echo "Injects and replacements..."
                     for myfile in $( find "$_dirdoc" -name "*.html" )
                     do
                         add2DocPage "$myfile"
