@@ -21,9 +21,10 @@
 # 2022-09-25   ah   v0.15  fix mix of static and daux generated helppdages
 # 2023-07-17   ah   v0.16  add links to external docs
 # 2023-08-15   ah   v0.17  add replacements
+# 2023-08-23   ah   v0.18  supress warnings on missing jq filters
 # ======================================================================
 
-GD_VERSION="0.17"
+GD_VERSION="0.18"
 
 GD_GITREPO="https://github.com/axelhahn/multidoc-generator"
 GD_SELFDIR=$( dirname "$0" )
@@ -192,10 +193,10 @@ function add2Page(){
 # param  string  filename
 function add2IdxPage(){
     if [ -z "${__page_add_idx_head__}" ]; then
-        __page_add_idx_head__=$( jq '.inject.idx_head' "$GD_JSONCONFIG" | sed 's#^\"##' | sed 's#\"$##' )
+        __page_add_idx_head__=$( jq '.inject.idx_head' "$GD_JSONCONFIG" 2>/dev/null | sed 's#^\"##' | sed 's#\"$##' )
     fi
     if [ -z "${__page_add_idx_body__}" ]; then
-        __page_add_idx_body__=$( jq '.inject.idx_body' "$GD_JSONCONFIG" | sed 's#^\"##' | sed 's#\"$##' )
+        __page_add_idx_body__=$( jq '.inject.idx_body' "$GD_JSONCONFIG" 2>/dev/null | sed 's#^\"##' | sed 's#\"$##' )
     fi
 
     add2Page "$1" "$__page_add_idx_head__" "</head>"
@@ -208,10 +209,10 @@ function add2IdxPage(){
 function add2DocPage(){
     local _file=$1
     if [ -z "${__page_add_doc_head__}" ]; then
-        __page_add_doc_head__=$( jq '.inject.doc_head' "$GD_JSONCONFIG" | sed 's#^\"##' | sed 's#\"$##' )
+        __page_add_doc_head__=$( jq '.inject.doc_head' "$GD_JSONCONFIG" 2>/dev/null | sed 's#^\"##' | sed 's#\"$##' )
     fi
     if [ -z "${__page_add_doc_body__}" ]; then
-        __page_add_doc_body__=$( jq '.inject.doc_body' "$GD_JSONCONFIG" | sed 's#^\"##' | sed 's#\"$##' )
+        __page_add_doc_body__=$( jq '.inject.doc_body' "$GD_JSONCONFIG" 2>/dev/null | sed 's#^\"##' | sed 's#\"$##' )
     fi
 
     echo "FILE: $_file"
@@ -228,16 +229,16 @@ function addReplacements(){
     local _file=$1
     local _section
 
-    jq -c '.replacements[]' "$GD_JSONCONFIG" | while read -r _section; do
+    jq -c '.replacements[]' "$GD_JSONCONFIG" 2>/dev/null | while read -r _section; do
 
         # set content into from .. to section
-        _from=$( jq ".from" <<< "$_section" | sed 's#^"##' | sed 's#"$##' )
+        _from=$( jq ".from" <<< "$_section" 2>/dev/null | sed 's#^"##' | sed 's#"$##' )
         if [ -n "$_from" ] && grep "$_from" "$_file" >/dev/null; then
             declare -i iStart=0
             declare -i iEnd=0
 
-            _to=$( jq ".to" <<< "$_section" | sed 's#^"##' | sed 's#"$##' )
-            _content=$( jq -r ".content | @tsv" <<< "$_section" | tr '\t' '\n' )
+            _to=$( jq ".to" <<< "$_section" 2>/dev/null | sed 's#^"##' | sed 's#"$##' )
+            _content=$( jq -r ".content | @tsv" <<< "$_section" 2>/dev/null | tr '\t' '\n' )
 
             echo "    ... between $_from ... and $_to:"
             echo "$_content"
@@ -260,9 +261,9 @@ function addReplacements(){
         fi
 
         # search and replace of strings
-        _search=$( jq ".search" <<< "$_section" | sed 's#^"##' | sed 's#"$##' )
+        _search=$( jq ".search" <<< "$_section" 2>/dev/null | sed 's#^"##' | sed 's#"$##' )
         if [ -n "$_search" ] && grep "$_search" "$_file" >/dev/null; then
-            _content=$( jq -r ".content" <<< "$_section" )
+            _content=$( jq -r ".content" <<< "$_section" 2>/dev/null )
             echo "    Replace '$_search' -> '$_content'"
             sed -i "s#${_search}#${_content}#g" "$_file"
         fi
@@ -278,9 +279,9 @@ function generateIndex(){
     local _data
     local __page_title__
     local __page_descr__
-    __page_title__=$( jq '.title' "$GD_JSONCONFIG" )
+    __page_title__=$( jq '.title' "$GD_JSONCONFIG" 2>/dev/null )
     __page_title__=${__page_title__//\"/}
-    __page_descr__=$( jq '.descr' "$GD_JSONCONFIG" )
+    __page_descr__=$( jq '.descr' "$GD_JSONCONFIG" 2>/dev/null)
     __page_descr__=${__page_descr__//\"/}
 
     __CONTENT__=$( cat "$GD_IDXDATA" 2>/dev/null )
@@ -320,34 +321,34 @@ function processRepos(){
     mkdir "$GD_DIR_PUBLISH" 2>/dev/null
 
     # ----- JSON PARSING
-    jq ".sections[] .group" "$GD_JSONCONFIG" | while read _mygroup
+    jq ".sections[] .group" "$GD_JSONCONFIG" 2>/dev/null | while read -r _mygroup
     do
         
         _group="${_mygroup//[\"]/}" # $_mygroup without surrounding quotes
 
         echo
         echo -e "\e[1;35m=============== adding GROUP = $_group \e[0m"
-        _groupinfo=$( jq ".sections[] | select(.group==${_mygroup}) .descr" "$GD_JSONCONFIG" )
+        _groupinfo=$( jq ".sections[] | select(.group==${_mygroup}) .descr" "$GD_JSONCONFIG" 2>/dev/null )
         addGroup "${_group}" "${_groupinfo//\"/}"
         # | jq '.[] | select(.group=="first") .items'
         echo
         echo "looping over group items ..."
-        _iLength=$( jq ".sections[] | select(.group==${_mygroup}) .items|length" "$GD_JSONCONFIG" )
+        _iLength=$( jq ".sections[] | select(.group==${_mygroup}) .items|length" "$GD_JSONCONFIG" 2>/dev/null )
         for _iItem in $( seq $_iLength )
         do
             _bSkipIndex=0
             _iIdx=$_iItem-1
-            _item=$( jq ".sections[] | select(.group==${_mygroup}) .items[$_iIdx]" "$GD_JSONCONFIG" )
+            _item=$( jq ".sections[] | select(.group==${_mygroup}) .items[$_iIdx]" "$GD_JSONCONFIG" 2>/dev/null )
 
             echo "DEBUG: item =  $_item"
 
-            _title=$(  echo "$_item" | jq ".title"   | tr -d '"')
-            _descr=$(  echo "$_item" | jq ".descr"   | tr -d '"')
-            _author=$( echo "$_item" | jq ".author"  | tr -d '"')
+            _title=$(  echo "$_item" | jq ".title"   2>/dev/null | tr -d '"')
+            _descr=$(  echo "$_item" | jq ".descr"   2>/dev/null | tr -d '"')
+            _author=$( echo "$_item" | jq ".author"  2>/dev/null | tr -d '"')
 
-            _prj=$(    echo "$_item" | jq ".subdir"  | tr -d '"')
-            _url=$(    echo "$_item" | jq ".url"     | tr -d '"')
-            _docurl=$( echo "$_item" | jq ".docurl"  | tr -d '"' | sed "s#^null\$##")
+            _prj=$(    echo "$_item" | jq ".subdir"  2>/dev/null | tr -d '"')
+            _url=$(    echo "$_item" | jq ".url"     2>/dev/null | tr -d '"')
+            _docurl=$( echo "$_item" | jq ".docurl"  2>/dev/null | tr -d '"' | sed "s#^null\$##")
 
             if [ "$_prj" != "null" ]; then
 
@@ -360,7 +361,7 @@ function processRepos(){
 
             else
 
-                _url=$(    echo "$_item" | jq ".repo"    | tr -d '"')
+                _url=$(    echo "$_item" | jq ".repo"  2>/dev/null | tr -d '"')
                 _prj=$( echo "$_url" | rev | cut -f 1 -d '/' | rev | sed "s#.git##" )
 
                 echo
