@@ -17,6 +17,7 @@
 # 2022-08-17  v0.10  ahahn  dimmed sections if folder has no match
 # 2022-08-18  v0.11  ahahn  add menu to jump to existing sections
 # 2023-07-29  v0.12  ahahn  use css flexbox
+# 2024-02-25  v0.13  ahahn  add views: boxes and list
 # ================================================================================
 
 
@@ -62,17 +63,49 @@ html_page="<!doctype html>
             div#filterbox input:focus{border: 1px solid #abc !important;}
             div#filterbox:hover nav{display: block;}
 
-            div.container{display: flex; flex-direction: row; flex-wrap: wrap;  row-gap: 2em; column-gap: 1em; }
-            div.box{min-width: 20em; border: 2px solid rgba(0,0,0,0.1); border-radius: 0.5em; background:var(--bgBox); box-shadow: none; opacity: 1; transition: all 0.3s;
-                flex-basis: 22em; flex-grow: 0;
+            div#selectview{
+                margin-bottom: 1em;
+            }
+            div#selectview button{
+                background: var(--bgBody);
+                color:#888;
+                border: 1px solid rgba(0,0,0,0.1);
+                padding: 0.3em 1em;
+            }
+            div#selectview button.active{
+                background: #fff;
+                color: var(--color);
+                box-shadow: var(--bgBody) 0.2em 0.2em 0.3em inset;
+            }
+
+            div.container{flex-direction: row; flex-wrap: wrap;  row-gap: 2em; column-gap: 1em; }
+            .view-boxes{
+                display: flex; 
+            }
+            div.box{min-width: 20em; border: 2px solid rgba(0,0,0,0.1); border-radius: 0.5em; background:var(--bgBox); box-shadow: none; opacity: 1; margin-left: 2em; transition: all 0.3s;}
+            .view-boxes div.box{
+                flex-basis: 22em; flex-grow: 0;margin-left: 0; 
             }
             div.hiddenboxclass{height:0; width: 0; display: none;}
             div.box:hover{box-shadow: 0 0 2em var(--colorShadow);border-color: rgba(0,0,0,0.15); cursor:pointer; opacity: 1;}
-            div.boxheader{background: var(--colorSectionA); padding: 0.5em 1em; border-radius: 0.3em 0.3em 0 0 ; transition: all 1s}
-            div.boxheader>span{font-size: 130%}
-            div.box:hover div.boxheader{background: var(--bgBoxHeadHover);}
-            div.boxheader a{color:var(--colorBoxHead); font-weight: bold; text-decoration: none;}
-            div.boxcontent{margin: 1em;}
+            
+            div.boxheader{ border-radius: 0.3em 0.3em 0 0 ; padding: 0.5em; transition: all 1s}
+            .view-boxes div.boxheader{background: var(--colorSectionA);padding: 0.5em 1em;}
+
+            
+            section:nth-child(4n+2) div.boxheader a{color:var(--colorSectionA);}
+            section:nth-child(4n+3) div.boxheader a{color:var(--colorSectionB);}
+            section:nth-child(4n+4) div.boxheader a{color:var(--colorSectionC);}
+            section:nth-child(4n+5) div.boxheader a{color:var(--colorSectionD);}
+
+            div.boxheader>span{font-size: 130%;}
+            .view-boxes div.box:hover div.boxheader{background: var(--bgBoxHeadHover);}
+            section .view-boxes div.boxheader a{color:var(--colorBoxHead); font-weight: bold; text-decoration: none;}
+
+            div.boxcontent{margin: 0 1em 0.3em; display: none;}
+            .view-list div.boxcontent{ display: block;}
+            .view-boxes div.boxcontent{margin: 1em; display: block;}
+
             nav{text-align: left; display: none; padding: 1em;}
             nav a {display: block; padding: 0.4em;}
             nav a:hover{background: #fed;}
@@ -83,16 +116,16 @@ html_page="<!doctype html>
 
             section:nth-child(1) {box-shadow: none;}
 
-            section:nth-child(4n+2) div.boxheader{background:var(--colorSectionA);}
+            section:nth-child(4n+2) .view-boxes div.boxheader{background:var(--colorSectionA);}
             section:nth-child(4n+2) h2{color:var(--colorSectionA);}
 
-            section:nth-child(4n+3) div.boxheader{background:var(--colorSectionB);}
+            section:nth-child(4n+3) .view-boxes div.boxheader{background:var(--colorSectionB);}
             section:nth-child(4n+3) h2{color:var(--colorSectionB);}
 
-            section:nth-child(4n+4) div.boxheader{background:var(--colorSectionC);}
+            section:nth-child(4n+4) .view-boxes div.boxheader{background:var(--colorSectionC);}
             section:nth-child(4n+4) h2{color:var(--colorSectionC);}
 
-            section:nth-child(4n+5) div.boxheader{background:var(--colorSectionD);}
+            section:nth-child(4n+5) .view-boxes div.boxheader{background:var(--colorSectionD);}
             section:nth-child(4n+5) h2{color:var(--colorSectionD);}
             
         </style>
@@ -103,6 +136,9 @@ html_page="<!doctype html>
             var sClassHiddenSection='hidden';
             var sClassHidden='hiddenboxclass';
 
+            /**
+             * generate menu of sections on the top right
+             */
             function generateMenu(){
                 // return true;
                 
@@ -119,6 +155,10 @@ html_page="<!doctype html>
                 return true;
                 
             }
+
+            /**
+             * filter/ reduce visible docs while typing in filter field
+             */
             function filter(){
 
                 // ---------- show / hide boxes based on search text
@@ -162,15 +202,56 @@ html_page="<!doctype html>
                 }
 
             }
-            window.setTimeout('generateMenu();filter()', 20);
+
+            /**
+             * set a view style
+             */
+            function enableView(idActive){
+
+                var divClass=idActive=='btnViewBox' ? ' view-boxes' : '';
+                var obj = document.getElementsByClassName('container');
+                for (i = 0; i < obj.length; i++) {
+                    obj[i].className='container' + divClass;
+                }
+
+                var obj = document.getElementsByClassName('btnview');
+                for (i = 0; i < obj.length; i++) {
+                    obj[i].className='btnview';
+                    if(obj[i].id==idActive){
+                        obj[i].className='btnview active';
+                        localStorage.setItem('overview-selectview', idActive)
+                    }
+                }
+            }
+
+            /**
+             * restore last view style (by reading localStorage)
+             */
+            function setView(){
+                var sActiveId=localStorage.getItem('overview-selectview');
+                console.log('View: ' + sActiveId);
+                if (sActiveId==null) {
+                    console.log('set View to btnViewBox');
+                    sActiveId='btnViewBox';
+                }
+                enableView(sActiveId);
+            }
+
+            // INIT
+            window.setTimeout('setView(); generateMenu(); filter()', 20);
         </script>
     </head>
     <body>
         <section>
             <div id=\"filterbox\">
+                <div id=\"selectview\">
+                    View: 
+                    <button id=\"btnViewBox\"  class=\"btnview active\" onclick=\"enableView('btnViewBox');\">🟦 Boxes</button>
+                    <button id=\"btnViewList\" class=\"btnview\"        onclick=\"enableView('btnViewList');\">🟰 List</button>
+                </div>
                 🔎 Filter:
                 <input type=\"text\" id=\"eFilter\" autofocus 
-                    onchange=\"filter();\" onkeyup=\"filter();\" onchange=\"filter();\" 
+                    onchange=\"filter();\" onkeyup=\"filter();\"
                     value=\"\" size=\"20\" placeholder=\"Start to type ...\"><br>
                 <span id=\"idCount\"></span>
                 <nav id=\"divMenu\"></nav>
