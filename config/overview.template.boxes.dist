@@ -229,9 +229,7 @@ html_page="<!doctype html>
              */
             function setView(){
                 var sActiveId=localStorage.getItem('overview-selectview');
-                console.log('View: ' + sActiveId);
                 if (sActiveId==null) {
-                    console.log('set View to btnViewBox');
                     sActiveId='btnViewBox';
                 }
                 enableView(sActiveId);
